@@ -1,0 +1,152 @@
+﻿set (_lib_name cam-app)
+
+cmake_minimum_required(VERSION 3.16)
+project(${_lib_name} VERSION 1 LANGUAGES CXX)
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLIBRDKAFKA_STATICLIB ")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNOMINMAX ")
+
+#find_package(CppMicroServices REQUIRED)
+
+find_package(SOCI CONFIG REQUIRED)
+#target_link_libraries(main PRIVATE SOCI::soci_core SOCI::soci_empty SOCI::soci_mysql)
+
+find_package(Poco REQUIRED Data Foundation CppParser Encodings JSON  Crypto Net NetSSL Util Zip ActiveRecord)
+
+find_package(protobuf CONFIG REQUIRED)
+
+#find_package(LZ4 CONFIG REQUIRED)
+find_package(RdKafka CONFIG REQUIRED)
+#find_package(CppKafka CONFIG REQUIRED)
+#target_link_libraries(main PRIVATE RdKafka::rdkafka RdKafka::rdkafka++)
+
+
+# Find requirements
+if(NOT fastcdr_FOUND)
+    find_package(fastcdr REQUIRED)
+endif()
+
+if(NOT foonathan_memory_FOUND)
+    find_package(foonathan_memory REQUIRED)
+endif()
+
+if(NOT fastrtps_FOUND)
+    find_package(fastrtps REQUIRED)
+endif()
+
+#set(Boost_USE_STATIC_LIBS ON)
+#set(BOOST_COMPONENTS filesystem iostreams system thread regex chrono atomic )
+#find_package(Boost REQUIRED COMPONENTS ${BOOST_COMPONENTS})
+
+#if(NOT TARGET spdlog)
+find_package(spdlog CONFIG REQUIRED)
+#endif()
+
+#find_package(eclipse-paho-mqtt-c CONFIG REQUIRED)
+#target_link_libraries(main PRIVATE eclipse-paho-mqtt-c::paho-mqtt3a eclipse-paho-mqtt-c::paho-mqtt3c eclipse-paho-mqtt-c::paho-mqtt3as eclipse-paho-mqtt-c::paho-mqtt3cs)
+
+#list(APPEND CMAKE_PREFIX_PATH C:/mqtt/paho-c/lib/cmake/eclipse-paho-mqtt-c)
+find_package(eclipse-paho-mqtt-c CONFIG REQUIRED)
+#list(APPEND CMAKE_PREFIX_PATH C:/mqtt/paho-cpp/lib/cmake/PahoMqttCpp)
+#find_package(PahoMqttCpp REQUIRED)
+
+#add_executable(async_subscribe async_subscribe.cpp)
+
+#target_link_libraries(async_subscribe PahoMqttCpp::PahoMqttCpp)
+
+
+#find_package(unofficial-concurrentqueue CONFIG REQUIRED)
+
+find_package(Poco REQUIRED Data Foundation CppParser Encodings JSON  Crypto Net NetSSL Util Zip ActiveRecord)
+
+find_package(protobuf CONFIG REQUIRED)
+
+
+include_directories(include)
+
+#find_package(cpuid CONFIG REQUIRED)
+#target_link_libraries(main PRIVATE cpuid::cpuid)
+
+include_directories(${PahoMqttCpp_INCLUDE_DIRS})
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${VCPKG_INSTALL}/include)
+include_directories(../../db)
+include_directories(../../db)
+include_directories(../../db/rd)
+include_directories(../../utils)
+include_directories(../../dds)
+include_directories(../../third_party/mqtt/mqtt)
+include_directories(../../third_party/kafka/)
+
+message(STATUS "Configuring cam-app ...")
+file(GLOB DDS_COMM_SOURCES_CXX "../../dds/*.cxx")
+file(GLOB DDS_NODE_SOURCES_CXX "*.cxx")
+file(GLOB PB_SOURCES_CXX "*.cc")
+file(GLOB DDS_NODE_SOURCES_CPP "*.cpp")
+file(GLOB UTILS_SOURCES_CPP "../../utils/*.cpp")
+file(GLOB CONFIG_SOURCES_CPP "../../utils/config/*.cpp")
+file(GLOB INI_NODE_SOURCES_CPP "../../utils/ini/*.cpp")
+file(GLOB TOPCI_BASE_SOURCES_CPP "../../dds/*.cpp")
+file(GLOB DB_SOURCES_CPP "../../db/*.cpp")
+file(GLOB DB_RD_SOURCES_CPP "../../db/rd/*.cpp")
+file(GLOB MQTT_SOURCES_CPP "../../third_party/mqtt/*.cpp")
+file(GLOB KAFKA_SOURCES_CPP "../../third_party/kafka/*.cpp")
+
+#file(GLOB XML_CONFIG_FILES "*.xml")
+#message(STATUS "XML Files: " ${XML_CONFIG_FILES})
+# configure_file("NODESubscriber.xml" "NODESubscriber.xml" COPYONLY)
+# configure_file("NODEPublisher.xml" "NODEPublisher.xml" COPYONLY)
+
+if(NOT BUILD_SHARED_LIBS)
+  set(_target_zip_archives  ${CppMicroServices_LIBRARIES})
+  set(_srcs main.cpp)
+  add_executable(${_lib_name}  ${DDS_COMM_SOURCES_CXX} ${DDS_COMM_SOURCES_CPP} ${DDS_NODE_SOURCES_CXX} ${DDS_NODE_SOURCES_CPP} ${INI_NODE_SOURCES_CPP} ${CONFIG_SOURCES_CPP} ${TOPCI_BASE_SOURCES_CPP} ${DB_SOURCES_CPP} ${DB_RD_SOURCES_CPP} ${UTILS_SOURCES_CPP} ${PB_SOURCES_CXX} ${MQTT_SOURCES_CPP} ${KAFKA_SOURCES_CPP})
+
+  	IF (CMAKE_SYSTEM_NAME MATCHES "Linux")
+		target_link_libraries(${_lib_name} PRIVATE ${CppMicroServices_LIBRARIES} ${Boost_LIBRARIES} fastrtps fastcdr foonathan_memory soci_core soci_empty soci_mysql  spdlog::spdlog spdlog::spdlog_header_only   Poco::NetSSL Poco::Net protobuf::libprotoc protobuf::libprotobuf protobuf::libprotobuf-lite uuid eclipse-paho-mqtt-c::paho-mqtt3as stdc++fs stdc++ mysqlclient zstd ssl crypto resolv m rdkafka rdkafka++ )
+	ELSEIF (CMAKE_SYSTEM_NAME MATCHES "Windows")
+		target_link_libraries(${_lib_name} PRIVATE ${CppMicroServices_LIBRARIES} ${Boost_LIBRARIES} fastrtps fastcdr foonathan_memory SOCI::soci_core SOCI::soci_empty SOCI::soci_mysql spdlog::spdlog spdlog::spdlog_header_only  Poco::NetSSL Poco::Net protobuf::libprotoc protobuf::libprotobuf protobuf::libprotobuf-lite eclipse-paho-mqtt-c::paho-mqtt3as RdKafka::rdkafka RdKafka::rdkafka++ )
+	ELSEIF (CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
+		target_link_libraries(${_lib_name} PRIVATE ${CppMicroServices_LIBRARIES} ${Boost_LIBRARIES} fastrtps fastcdr foonathan_memory soci_core soci_empty soci_mysql  spdlog::spdlog spdlog::spdlog_header_only  unofficial::concurrentqueue::concurrentqueue Poco::NetSSL Poco::Net protobuf::libprotoc protobuf::libprotobuf protobuf::libprotobuf-lite uuid stdc++fs stdc++ mysqlclient zstd ssl crypto resolv m RdKafka::rdkafka RdKafka::rdkafka++ )
+	ELSE ()
+		target_link_libraries(${_lib_name} PRIVATE ${CppMicroServices_LIBRARIES} ${Boost_LIBRARIES} fastrtps fastcdr foonathan_memory soci_core soci_empty soci_mysql  spdlog::spdlog spdlog::spdlog_header_only  unofficial::concurrentqueue::concurrentqueue Poco::NetSSL Poco::Net protobuf::libprotoc protobuf::libprotobuf protobuf::libprotobuf-lite uuid stdc++fs stdc++ mysqlclient zstd ssl crypto resolv m RdKafka::rdkafka RdKafka::rdkafka++ )
+	ENDIF (CMAKE_SYSTEM_NAME MATCHES "Linux")
+
+  usFunctionAddResources(TARGET ${_lib_name}
+                         BUNDLE_NAME main
+                         ZIP_ARCHIVES ${_target_zip_archives})
+  
+  target_compile_definitions(${_lib_name} PRIVATE
+		$<$<AND:$<NOT:$<BOOL:${WIN32}>>,$<STREQUAL:"${CMAKE_BUILD_TYPE}","Debug">>:__DEBUG>
+		$<$<BOOL:${INTERNAL_DEBUG}>:__INTERNALDEBUG> # Internal debug activated.
+	)
+
+  usFunctionEmbedResources(TARGET ${_lib_name})
+  
+  message(STATUS ${BIN_INSTALL_DIR})
+  
+  install(TARGETS ${_lib_name}  RUNTIME DESTINATION ${BIN_INSTALL_DIR})
+else()
+  #add_executable(${_lib_name} main.cpp)
+  #target_link_libraries(${_lib_name} ${CppMicroServices_LIBRARIES})
+  
+  #add_executable(${_lib_name} ${DDS_NODE_SOURCES_CXX} ${DDS_NODE_SOURCES_CPP} ${INI_NODE_SOURCES_CPP} ${CONFIG_SOURCES_CPP} ${TOPCI_BASE_SOURCES_CPP}${DB_SOURCES_CPP} ${DB_RD_SOURCES_CPP} ${UTILS_SOURCES_CPP}  ${HWINFO_CPP} ${HWINFO_SUB_CPP})
+  add_executable(${_lib_name}  ${DDS_COMM_SOURCES_CXX} ${DDS_COMM_SOURCES_CPP} ${DDS_NODE_SOURCES_CXX} ${DDS_NODE_SOURCES_CPP} ${INI_NODE_SOURCES_CPP} ${CONFIG_SOURCES_CPP} ${TOPCI_BASE_SOURCES_CPP} ${DB_SOURCES_CPP} ${DB_RD_SOURCES_CPP} ${UTILS_SOURCES_CPP}  ${PB_SOURCES_CXX}  ${KAFKA_SOURCES_CPP})
+
+  target_compile_definitions(${_lib_name} PRIVATE
+		$<$<AND:$<NOT:$<BOOL:${WIN32}>>,$<STREQUAL:"${CMAKE_BUILD_TYPE}","Debug">>:__DEBUG>
+		$<$<BOOL:${INTERNAL_DEBUG}>:__INTERNALDEBUG> # Internal debug activated.
+	)
+  #target_link_libraries(Node ${CppMicroServices_LIBRARIES} fastrtps fastcdr foonathan_memory SOCI::soci_core SOCI::soci_empty SOCI::soci_mysql spdlog::spdlog spdlog::spdlog_header_only ${Boost_LIBRARIES} unofficial::concurrentqueue::concurrentqueue)
+  	IF (CMAKE_SYSTEM_NAME MATCHES "Linux")
+		target_link_libraries(${_lib_name} PRIVATE ${CppMicroServices_LIBRARIES} ${Boost_LIBRARIES} fastrtps fastcdr foonathan_memory soci_core soci_empty soci_mysql  spdlog::spdlog spdlog::spdlog_header_only   Poco::NetSSL Poco::Net protobuf::libprotoc protobuf::libprotobuf protobuf::libprotobuf-lite uuid eclipse-paho-mqtt-c::paho-mqtt3as stdc++fs stdc++ mysqlclient zstd ssl crypto resolv m rdkafka rdkafka++ )
+	ELSEIF (CMAKE_SYSTEM_NAME MATCHES "Windows")
+		target_link_libraries(${_lib_name} PRIVATE ${CppMicroServices_LIBRARIES} ${Boost_LIBRARIES} fastrtps fastcdr foonathan_memory SOCI::soci_core SOCI::soci_empty SOCI::soci_mysql spdlog::spdlog spdlog::spdlog_header_only  Poco::NetSSL Poco::Net protobuf::libprotoc protobuf::libprotobuf protobuf::libprotobuf-lite eclipse-paho-mqtt-c::paho-mqtt3as RdKafka::rdkafka RdKafka::rdkafka++ )
+	ELSEIF (CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
+		target_link_libraries(${_lib_name} PRIVATE ${CppMicroServices_LIBRARIES} ${Boost_LIBRARIES} fastrtps fastcdr foonathan_memory soci_core soci_empty soci_mysql  spdlog::spdlog spdlog::spdlog_header_only  unofficial::concurrentqueue::concurrentqueue Poco::NetSSL Poco::Net protobuf::libprotoc protobuf::libprotobuf protobuf::libprotobuf-lite uuid stdc++fs stdc++ mysqlclient zstd ssl crypto resolv m RdKafka::rdkafka RdKafka::rdkafka++ )
+	ELSE ()
+		target_link_libraries(${_lib_name} PRIVATE ${CppMicroServices_LIBRARIES} ${Boost_LIBRARIES} fastrtps fastcdr foonathan_memory soci_core soci_empty soci_mysql  spdlog::spdlog spdlog::spdlog_header_only  unofficial::concurrentqueue::concurrentqueue Poco::NetSSL Poco::Net protobuf::libprotoc protobuf::libprotobuf protobuf::libprotobuf-lite uuid stdc++fs stdc++ mysqlclient zstd ssl crypto resolv m RdKafka::rdkafka RdKafka::rdkafka++ )
+	ENDIF (CMAKE_SYSTEM_NAME MATCHES "Linux")
+
+endif()
+

@@ -1,0 +1,41 @@
+mirrors:
+  docker.io:
+    endpoint:
+      - "https://registry.docker-cn.com"
+      - "https://hub-mirror.c.163.com"
+      - "https://mirror.baidubce.com"
+  quay.io:
+    endpoint:
+      - "https://quay.mirrors.ustc.edu.cn"
+  gcr.io:
+    endpoint:
+      - "https://gcr.mirrors.ustc.edu.cn"
+  k8s.gcr.io:
+    endpoint:
+      - "https://registry.aliyuncs.com/k8sxio"
+  harbor.bigdata.seisys.cn:8443:
+    endpoint:
+      - "http://harbor.bigdata.seisys.cn:8443"
+  harbor.center.ota.innoception.cn:28443:
+    endpoint:
+      - "http://harbor.center.ota.innoception.cn:28443"
+
+configs:
+  "registry.docker-cn.com":
+    auth: {}
+  "hub-mirror.c.163.com":
+    auth: {}
+  "mirror.baidubce.com":
+    auth: {}
+  "quay.mirrors.ustc.edu.cn":
+    auth: {}
+  "gcr.mirrors.ustc.edu.cn":
+    auth: {}
+  "registry.aliyuncs.com":
+    auth: {}
+  "harbor.bigdata.seisys.cn:8443":
+    tls:
+      insecure_skip_verify: true
+  "harbor.center.ota.innoception.cn:28443":
+    tls:
+      insecure_skip_verify: true

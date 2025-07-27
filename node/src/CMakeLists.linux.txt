@@ -1,0 +1,135 @@
+﻿set(_lib_name node)
+
+cmake_minimum_required(VERSION 3.16)
+project(${_lib_name} VERSION 1 LANGUAGES CXX)
+IF (CMAKE_SYSTEM_NAME MATCHES "Linux")
+	MESSAGE(STATUS "current platform: Linux ")
+	include(/usr/local/vcpkg/scripts/buildsystems/vcpkg.cmake)
+ELSEIF (CMAKE_SYSTEM_NAME MATCHES "Windows")
+	MESSAGE(STATUS "current platform: Windows")
+ELSEIF (CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
+	MESSAGE(STATUS "current platform: FreeBSD")
+ELSE ()
+	MESSAGE(STATUS "other platform: ${CMAKE_SYSTEM_NAME}")
+ENDIF (CMAKE_SYSTEM_NAME MATCHES "Linux")
+
+
+find_package(CppMicroServices REQUIRED)
+
+find_package(SOCI CONFIG REQUIRED)
+#target_link_libraries(main PRIVATE SOCI::soci_core SOCI::soci_empty SOCI::soci_mysql)
+
+# Find requirements
+if(NOT fastcdr_FOUND)
+    find_package(fastcdr REQUIRED)
+endif()
+
+if(NOT foonathan_memory_FOUND)
+    find_package(foonathan_memory REQUIRED)
+endif()
+
+if(NOT fastrtps_FOUND)
+    find_package(fastrtps REQUIRED)
+endif()
+
+find_package(unofficial-concurrentqueue CONFIG REQUIRED)
+
+find_package(Poco REQUIRED Data Foundation CppParser Encodings JSON  Crypto Net NetSSL Util Zip ActiveRecord)
+
+find_package(protobuf CONFIG REQUIRED)
+
+#set(Boost_USE_STATIC_LIBS ON)
+set(BOOST_COMPONENTS filesystem iostreams system thread regex chrono atomic )
+find_package(Boost REQUIRED COMPONENTS ${BOOST_COMPONENTS})
+
+#if(NOT TARGET spdlog)
+find_package(spdlog CONFIG REQUIRED)
+#endif()
+
+find_package(unofficial-concurrentqueue CONFIG REQUIRED)
+
+
+include_directories(include)
+
+#find_package(cpuid CONFIG REQUIRED)
+#target_link_libraries(main PRIVATE cpuid::cpuid)
+
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${VCPKG_INSTALL}/include)
+include_directories(../../db)
+include_directories(../../db)
+include_directories(../../db/rd)
+include_directories(../../utils)
+include_directories(../../dds)
+
+message(STATUS "Configuring DDS Node...")
+file(GLOB DDS_NODE_SOURCES_CXX "*.cxx")
+file(GLOB DDS_NODE_SOURCES_CPP "*.cpp")
+file(GLOB UTILS_SOURCES_CPP "../../utils/*.cpp")
+file(GLOB CONFIG_SOURCES_CPP "../../utils/config/*.cpp")
+file(GLOB INI_NODE_SOURCES_CPP "../../utils/ini/*.cpp")
+file(GLOB TOPCI_BASE_SOURCES_CPP "../../dds/*.cpp")
+file(GLOB DB_SOURCES_CPP "../../db/*.cpp")
+file(GLOB DB_RD_SOURCES_CPP "../../db/rd/*.cpp")
+
+file(GLOB HWINFO_CPP "hwinfo/*.cpp")
+file(GLOB HWINFO_SUB_CPP "hwinfo/*/*.cpp")
+file(GLOB HWINFO_SUB_SUB_CPP "hwinfo/*/*/*.cpp")
+#file(GLOB XML_CONFIG_FILES "*.xml")
+#message(STATUS "XML Files: " ${XML_CONFIG_FILES})
+# configure_file("NODESubscriber.xml" "NODESubscriber.xml" COPYONLY)
+# configure_file("NODEPublisher.xml" "NODEPublisher.xml" COPYONLY)
+
+if(NOT BUILD_SHARED_LIBS)
+  set(_target_zip_archives  ${CppMicroServices_LIBRARIES})
+  set(_srcs main.cpp)
+  add_executable(${_lib_name} ${DDS_NODE_SOURCES_CXX} ${DDS_NODE_SOURCES_CPP} ${INI_NODE_SOURCES_CPP} ${CONFIG_SOURCES_CPP} ${TOPCI_BASE_SOURCES_CPP} ${DB_SOURCES_CPP} ${DB_RD_SOURCES_CPP} ${UTILS_SOURCES_CPP} ${HWINFO_CPP} ${HWINFO_SUB_CPP} ${HWINFO_SUB_SUB_CPP}) 
+  	IF (CMAKE_SYSTEM_NAME MATCHES "Linux")
+		target_link_libraries(${_lib_name}  ${CppMicroServices_LIBRARIES} ${Boost_LIBRARIES} fastrtps fastcdr foonathan_memory soci_core soci_empty soci_mysql  spdlog::spdlog spdlog::spdlog_header_only  unofficial::concurrentqueue::concurrentqueue Poco::NetSSL Poco::Net protobuf::libprotoc protobuf::libprotobuf protobuf::libprotobuf-lite uuid stdc++fs stdc++ mysqlclient zstd ssl crypto resolv m)
+	ELSEIF (CMAKE_SYSTEM_NAME MATCHES "Windows")
+		target_link_libraries(${_lib_name}  ${CppMicroServices_LIBRARIES} ${Boost_LIBRARIES} fastrtps fastcdr foonathan_memory SOCI::soci_core SOCI::soci_empty SOCI::soci_mysql spdlog::spdlog spdlog::spdlog_header_only  Poco::NetSSL Poco::Net protobuf::libprotoc protobuf::libprotobuf protobuf::libprotobuf-lite )
+	ELSEIF (CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
+		target_link_libraries(${_lib_name}  ${CppMicroServices_LIBRARIES} ${Boost_LIBRARIES} fastrtps fastcdr foonathan_memory soci_core soci_empty soci_mysql  spdlog::spdlog spdlog::spdlog_header_only  unofficial::concurrentqueue::concurrentqueue Poco::NetSSL Poco::Net protobuf::libprotoc protobuf::libprotobuf protobuf::libprotobuf-lite uuid stdc++fs stdc++ mysqlclient zstd ssl crypto resolv m)
+	ELSE ()
+		target_link_libraries(${_lib_name}  ${CppMicroServices_LIBRARIES} ${Boost_LIBRARIES} fastrtps fastcdr foonathan_memory soci_core soci_empty soci_mysql  spdlog::spdlog spdlog::spdlog_header_only  unofficial::concurrentqueue::concurrentqueue Poco::NetSSL Poco::Net protobuf::libprotoc protobuf::libprotobuf protobuf::libprotobuf-lite uuid stdc++fs stdc++ mysqlclient zstd ssl crypto resolv m)
+	ENDIF (CMAKE_SYSTEM_NAME MATCHES "Linux")
+
+  usFunctionAddResources(TARGET ${_lib_name}
+                         BUNDLE_NAME main
+                         ZIP_ARCHIVES ${_target_zip_archives})
+  
+  target_compile_definitions(${_lib_name} PRIVATE
+		$<$<AND:$<NOT:$<BOOL:${WIN32}>>,$<STREQUAL:"${CMAKE_BUILD_TYPE}","Debug">>:__DEBUG>
+		$<$<BOOL:${INTERNAL_DEBUG}>:__INTERNALDEBUG> # Internal debug activated.
+	)
+
+  usFunctionEmbedResources(TARGET ${_lib_name})
+  
+  message(STATUS ${BIN_INSTALL_DIR})
+  
+  install(TARGETS ${_lib_name}  RUNTIME DESTINATION ${BIN_INSTALL_DIR})
+else()
+  #add_executable(${_lib_name} main.cpp)
+  #target_link_libraries(${_lib_name} ${CppMicroServices_LIBRARIES})
+  
+  add_executable(${_lib_name} ${DDS_NODE_SOURCES_CXX} ${DDS_NODE_SOURCES_CPP} ${INI_NODE_SOURCES_CPP} ${CONFIG_SOURCES_CPP} ${TOPCI_BASE_SOURCES_CPP}${DB_SOURCES_CPP} ${DB_RD_SOURCES_CPP} ${UTILS_SOURCES_CPP}  ${HWINFO_CPP} ${HWINFO_SUB_CPP} ${HWINFO_SUB_SUB_CPP})
+  target_compile_definitions(${_lib_name} PRIVATE
+		$<$<AND:$<NOT:$<BOOL:${WIN32}>>,$<STREQUAL:"${CMAKE_BUILD_TYPE}","Debug">>:__DEBUG>
+		$<$<BOOL:${INTERNAL_DEBUG}>:__INTERNALDEBUG> # Internal debug activated.
+	)
+
+	IF (CMAKE_SYSTEM_NAME MATCHES "Linux")
+		target_link_libraries(${_lib_name}  ${CppMicroServices_LIBRARIES} ${Boost_LIBRARIES} fastrtps fastcdr foonathan_memory soci_core soci_empty soci_mysql  spdlog::spdlog spdlog::spdlog_header_only  unofficial::concurrentqueue::concurrentqueue Poco::NetSSL Poco::Net protobuf::libprotoc protobuf::libprotobuf protobuf::libprotobuf-lite uuid stdc++fs stdc++ mysqlclient zstd ssl crypto resolv m)
+	ELSEIF (CMAKE_SYSTEM_NAME MATCHES "Windows")
+		target_link_libraries(${_lib_name}  ${CppMicroServices_LIBRARIES} ${Boost_LIBRARIES} fastrtps fastcdr foonathan_memory SOCI::soci_core SOCI::soci_empty SOCI::soci_mysql spdlog::spdlog spdlog::spdlog_header_only  Poco::NetSSL Poco::Net protobuf::libprotoc protobuf::libprotobuf protobuf::libprotobuf-lite )
+	ELSEIF (CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
+		target_link_libraries(${_lib_name}  ${CppMicroServices_LIBRARIES} ${Boost_LIBRARIES} fastrtps fastcdr foonathan_memory soci_core soci_empty soci_mysql  spdlog::spdlog spdlog::spdlog_header_only  unofficial::concurrentqueue::concurrentqueue Poco::NetSSL Poco::Net protobuf::libprotoc protobuf::libprotobuf protobuf::libprotobuf-lite uuid stdc++fs stdc++ mysqlclient zstd ssl crypto resolv m)
+	ELSE ()
+		target_link_libraries(${_lib_name}  ${CppMicroServices_LIBRARIES} ${Boost_LIBRARIES} fastrtps fastcdr foonathan_memory soci_core soci_empty soci_mysql  spdlog::spdlog spdlog::spdlog_header_only  unofficial::concurrentqueue::concurrentqueue Poco::NetSSL Poco::Net protobuf::libprotoc protobuf::libprotobuf protobuf::libprotobuf-lite uuid stdc++fs stdc++ mysqlclient zstd ssl crypto resolv m)
+	ENDIF (CMAKE_SYSTEM_NAME MATCHES "Linux")
+
+	
+	install(TARGETS ${_lib_name}  RUNTIME DESTINATION ${BIN_INSTALL_DIR})
+
+endif()
+

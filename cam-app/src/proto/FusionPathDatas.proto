@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package cn.seisys.rbx.comm.bean.multi;
+
+option java_package = "cn.seisys.rbx.comm.bean.multi";
+option java_outer_classname = "FusionPathDataProtos";
+
+import "MultiPathDatas.proto";
+
+
+
+message FusionPosData{
+		double longitude=1; //目标的坐标点经度， GPS 坐标 WGS84 坐标系，精度要求cm，精确到小数点后 8 位；
+		double lattitude=2; //目标的坐标点纬度， GPS 坐标 WGS84坐标 系，精度要求cm，精确到小数点后8位;
+		sint32 elevation=3; //消息的参考坐标点海拔高度 定义目标海拔高程。 分辨率为 0.1 米，取值范围-32768 到 32767，数值-32768 表示无效数值
+		int32 coordType=4; //三维空间坐标系类型 1 enu坐标系
+		float objX=5; //目标检测物相对于雷达坐标系的坐标X 单位：米
+		float objY=6; //目标检测物相对于雷达坐标系的坐标Y 单位：米
+		float objZ=7; //目标检测物相对于雷达坐标系的坐标Y 单位：米
+		int32 laneNo=8; //车道号
+		sint32 speed=9; //表示范围（-300~355.35m/s），保留2位小数，除100表示；如80.8m/s，表示为0x1F 0x90
+		sint32 speedX=10; //车辆或其他交通参与者相对于coordType坐标系类型 x 轴的速度矢量。保留2位小数，除100表示；单位为 0.01 m/s。可为负值。
+		sint32 speedY=11; //车辆或其他交通参与者相对于coordType坐标系类型y 轴的速度矢量。保留2位小数，除100表示；单位为 0.01 m/s。可为负值
+		sint32 speedZ=12; //车辆或其他交通参与者相对于coordType坐标系类型 z 轴的速度矢量。保留2位小数，除100表示；单位为 0.01 m/s。可为负值
+		int32 objOri=13; //定义目标航向角，按车头方向与正北方向的 顺时针夹角计算。取值范围 0 到 28800. 单位为 0.0125°，数值 28800 表示未知或无效。
+		int32 speedHeading=14; //定义车辆航向角，按车速方向与正北方向的 顺时针夹角计算。取值范围 0 到 28800.单位为 0.0125°，数值 28800 表示未知或无效。
+		sint32 aclr=15; //加速度 定义车辆加速度。分辨率为0.01m/s 2 ，取值范围（-2000至2000），数值2001为无效数值。
+		int32 aclrAngle=16; //按加速度与正北方向的 顺时针夹角计算。取值范围 0 到 28800. 单位为 0.0125°， 数值 28800 表示未知或无效。
+		sint32 aclr_x=17; //coordType坐标系类型x方向加速度 定义车辆加速度。分辨率为0.01m/s 2 ，取值范围（-2000至2000），数值2001为无效数值。
+		sint32 aclr_y=18; //coordType坐标系类型y方向加速度 定义车辆加速度。分辨率为0.01m/s 2 ，取值范围（-2000至2000），数值2001为无效数值。
+		sint32 aclr_z=19; //coordType坐标系类型z方向加速度 定义车辆加速度。 分辨率为0.01m/s 2 ， 取值范围（-2000至2000），数值2001为无效数值。
+		int32 objWidth=20; //车辆车身或其他交通参与者的宽度。 单位为1cm。 数值0表示无效数据
+		int32 objLength=21; //车辆车身或其他交通参与者的长度。 单位为1cm。 数值0表示无效数据。
+		int32 objHeight=22; //车辆车身或其他交通参与者的高度。 单位为1cm。 数值0表示无效数据。	
+}
+
+
+
+
+
+//RadarDevPathList
+message FusionPath{
+	int32 objID=1; //发送时间
+	int32 objType=2; //车型 1 小型车 2 中型车 3 大型车 4 行人 5 非机动车 6 超大型车 9 其他
+	int32 objKind=3; //0-未知 10-乘用车 20-小型卡 车、皮卡、面包车 25-大卡车、货车 40-摩托车 50-公交、短驳、换乘 60- 消防、救护、警车等特种车辆
+	int32 objState=4; //0 未知 1 直行 2 左转 3 右转 4 掉头 5 停止 6 逆行 7-变道 8-占用应急车道
+	int32 objCf=5; //数值范围 1~100 参与者存在的置信度
+	FusionPosData objPosDatas=6; //轨迹列表
+	bool hasVisionData=7; //目标数据是否携带视频结构化信息
+	CameraPath objVisionData=8; //目标的视觉结构化定义
+	repeated RelOriPosData oriPosDataList=9;	//每帧关联的原始数据列表
+}
+
+
+
+message FusionPathDatas{
+	int64 sendTime=1; //发送时间
+	int64 dataTime=2; //数据时间
+	int32 areaNo=3; //区域号
+	repeated FusionPath pathList=4;	//融合轨迹数据列表
+}
+
+message RelOriPosData{
+	string deviceID=1; //关联的设备ID
+	int32 devType=2; //关联的设备类型1.激光雷达设备 2.毫米波雷达设备 3.AI相机
+	int64 dataTime=3; //关联的设备的原始数据时间
+	repeated RelOriPosDataObjID objIDList=4;	//融合轨迹数据列表	
+	int64 processTime=5; //关联的设备结构化数据时间,unixTime 时间戳,单位到毫秒
+	int64 commRcvTime=6; //通信程序接收到设备数据的时间unixTime 时间戳， 单位到毫秒
+	int64 commSendTime=7; //通信程序发送设备数据的时间unixTime 时间戳， 单位到毫秒（从推送路口感知设备数据带回）
+	int64 fusionRcvTime=8; //融合算法接收到原始数据的时间unixTime 时间戳， 单位到毫秒
+}
+
+message RelOriPosDataObjID{
+	int64 objID=1; //发送时间
+}

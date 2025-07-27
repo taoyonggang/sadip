@@ -1,0 +1,22 @@
+﻿module cn{
+  module seisys {
+	module dds {
+		//所有消息通用监控topic结构，随着主topic名字变化
+		@topic
+		struct TopicMonInfo {
+			string uuid;        //消息唯一id
+			@key short domain;       //数据所在域
+			@key string srcNodeId;   //原始来源       
+			string srcNodeName;     //回复消息来源节点名
+			@key string toNodeId;        //一般此发送的管理节点或者独立专用监控节点
+			string toNodeName;     //回复消息来源节点名
+			@key string topicName;
+			@key long cycle;         //统计周期，单位秒，一般为60 或者 300秒
+			long long  updateTime;   //发送消息时间
+			long  nCount;           //周期内发送总数
+			long  nSize;            //周期内发送总字节数，byte
+			short srcType;          //统计来源，0，未知，1，发送端，2，接收端
+		};
+	  };
+  };
+};

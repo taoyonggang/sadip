@@ -1,0 +1,37 @@
+global:
+  scrape_interval:     15s
+  evaluation_interval: 15s
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets:
+rule_files:
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+    - targets: ['localhost:9090']
+  - job_name: 'node'
+    honor_timestamps: true
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    metrics_path: /metrics
+    scheme: http
+    follow_redirects: true
+    static_configs:
+    - targets:
+      - 10.10.3.30:9100
+      - 10.10.3.31:9100
+      - 10.10.3.32:9100
+      - 10.10.3.33:9100
+      - 10.10.3.24:9100
+      - 10.10.3.2:9100
+      - 10.10.3.3:9100
+      - 10.201.1.5:9100
+      - 10.201.1.6:9100
+      - 10.201.1.11:9100
+      - 10.201.1.6:9100
+  - job_name: 'gpu'
+    static_configs:
+    - targets: 
+       - 10.201.1.5:9400
+       - 10.201.1.6:9400

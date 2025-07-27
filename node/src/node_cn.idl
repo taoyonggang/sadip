@@ -1,0 +1,293 @@
+﻿module cn{
+  module seisys {
+	module dds {
+
+		typedef sequence<octet> OctetSeq;
+
+		enum ArchType {
+		 ARCHTYPEUNKNOWN,
+			 AMD64,
+			 X86,
+			 ARM64V8
+		};
+
+
+		enum OSType {
+			OSTYPENOWN,
+			WINDOWA,
+			LINUX
+		};
+
+		enum CmdType {
+			CMDTYPEUNKNOWN,
+			REBOOT,    //重启节点
+			RESTART,   //重启应用
+			LS,              //查询目录
+			MKDIR,          //创建目录
+			DEL,            //删除文件
+			DELDIR,         //删除目录
+			SENDFILE,   //传输文件
+			ADDAPP,     //加载插件
+			REMOVEAPP,   //删除APP
+			STARTAPP,     //启动独立进程
+			STOPAPP,    //停止独立进程
+			RESTARTAPP,  //重新启动独立进程
+			LSAPP,           //列举应用
+			ADDPLUGIN,      //安装插件，如果没有插件，还需要先下载，然后更新插件配置文件
+			REMOVEPLUGIN,     //删除插件
+			STARTPLUGIN,   //启动插件
+			STOPPLUGIN,      //停止插件
+			RESTARTPLUGIN,      //重启插件
+			LSPLUGIN,       //列举插件
+			GETS3FILE,       //获取s3文件
+			PUTS3FILE,        //上传s3文件
+			LSS3DIR,         //获取s3目录
+			LSS3BUCKETS,          //获取所有桶
+			COPYS3FILE,          //拷贝s3文件
+			DELS3FILE,           //删除s3文件
+			ZIP,               //压缩文件或者目录，取决传入参数
+			DZIP,               //解压文件或者目录 
+			ADDS3WATCH,              //增加S3目录监控，ｃｍｄ=dir,paras=1 keep file,0 delete file
+			RMS3WATCH,               //删除S3目录监控，ｃｍｄ=dir
+			LSS3WATCH,              //查询S3目录监控，同时返回最近同步的结果,最近此文件（１０条）上传路径和结果：时间，文件路径名，Ｓ３信息，成功？
+			STARTTRACELOG,          //启动日志跟踪，以文件名全路径作为uuid,cmd=路径+文件名，para订阅节点，"*"，表示所有
+			STOPTRACELOG,           //停止日志跟踪
+			LSTRACELOG,              //查看跟踪在跟踪的日志
+			STARTEXEC,               //执行命令，cmd 为命令和参数，para为工作目录,两者合在一起为唯一uuid，para为保留最新的执行条数，通常100，通过nodeCmdReply的desc返回结果（字符串形式）
+			STOPEXEC,
+			LSEXEC,
+			RMEXEC,                  //停止并删除执行的进程
+			GETEXECRESULT            //获取某uuid的最新执行信息，
+		};
+
+		enum NodeState {
+			NodeState_UNKNOWN,
+			online,
+			offline,
+			overload
+		};
+
+		//0:未知0:执行中 1：执行成功 2：非法，就是下面执行不成功，有错误，3，其它，超时等，没反馈
+		enum CommStatus {
+			STATUS_UNKNOWN,
+			DOING,
+			SUCCESS,
+			INVALID,
+			OTHER
+		};
+
+	@topic
+		struct File {
+			string filePathName;   //文件绝对路径或者相对路径文件名
+			boolean isDir;
+			long long fileSize;  //文件大小
+			long long timestamp; // 文件获取时间
+		};
+
+		typedef sequence<File> FileInfos;
+
+		//节点心跳消息，每5秒发一次
+
+		@topic
+		struct Ping {
+			@key string toNodeId;   // 目的节点，验证字段，节点编码
+			@key string srcNodeId;  //原始来源，回执节点
+			string nodeAppVer;   //节点app版本
+			string nodeCfgVer;   //节点配置版本
+			NodeState state;     //发送节点状态
+			long long createdAt;  //创建消息时间
+			string desc;         //状态描述,最好获取状态缓存，尽量不要耗时
+		};
+
+
+
+		struct Cpu {
+			string vendor;
+			string model;
+			long physicalCores;
+			long logicalCores;
+			long long maxFrequency;
+			long long regularFrequency;
+			long long minFrequency;
+			long long currentFrequency;
+			long long cacheSize;
+			double CPUUsage;
+		};
+
+		typedef sequence<Cpu> CpuSeq;
+
+		struct Gpu {
+			string vendor;
+			string model;
+			string driverVersion;
+			double memory;
+			long long frequency;
+		};
+
+		typedef sequence<Gpu> GpuSeq;
+
+		struct Ram {
+			string vendor;
+			string model;
+			string name;
+			string serialNumber;
+			long long size;
+			long long free;
+			long long available;
+		};
+
+
+
+		struct Disk {
+			string vendor;
+			string model;
+			string serialNumber;
+			long long size;
+		};
+		typedef sequence<Disk> DiskSeq;
+
+		struct MainBoard {
+			string vendor;
+			string name;
+			string version;
+			string serialNumber;
+		};
+
+		struct ProcessTime {
+			float userTime;
+			float kernelTime;
+			float childrenUsertime;
+			float childrenKernelTime;
+		};
+
+		struct Process {
+			string name;
+			string workPath;
+			long pid;
+			string args;
+			double cpuUsage;
+			double memUsage;
+			long long start_time;
+			long long stop_time;
+			long reboot_count;
+			long priority;
+			map<string,string> env;
+		};
+		typedef sequence<Process> ProcessSeq;
+
+		struct Network {
+			string name;
+			string ipv4s;
+			string ipv6s;
+			long long broadband;
+			long long broadbandUsing;
+		};
+		typedef sequence<Network> NetworkSeq;
+
+
+		struct OSInfo {
+			string operatingSystem;
+			string shortName;
+			string version;
+			string kernel;
+			string architecture;
+			string endianess;
+		};
+
+		@topic
+		struct MachineState {
+			@key string toNodeId;   // 目的节点，验证字段，节点编码
+			@key string srcNodeId;  //原始来源，回执节点
+			CpuSeq cpus;
+			GpuSeq gpus;
+			Ram rams;
+			DiskSeq disks;
+			NetworkSeq networks;
+			MainBoard mainBoardInfos;
+			OSInfo osInfos;
+			ProcessSeq processes;
+		};
+
+
+		//节点主配置消息,每个节点只收自己匹配的消息
+		@topic
+		struct Node {
+			string uuid;   //消息唯一id
+			@key string toNodeId;   // 目的节点，验证字段，节点编码
+			string toNodeName;  //验证字段，节点名
+			@key string srcNodeId;  //原始来源，回执节点
+			string toGroup;    //验证字段，节点所在组 center:mgr,center:business,edge:business,edge:ai
+			@key ArchType arch;   //验证字段，节点架构
+			OSType os;       //验证字段，节点系统
+			string uri;       //服务协议，IP,端口等
+			string toConfigPath;  //配置保存路径
+			string srcConfigPath;  //管理端配置保存路径
+			unsigned long domain;  //节点所在数据域
+			OctetSeq config;       //完整配置文件
+			string configHash;     //配置文件hash，验证配置文件完整性
+			unsigned long configSize;
+			NodeState state;
+			long long createdAt;   //创建时间
+			long long updatedAt;   //发送时间
+		};
+
+		//节点主配置消息回执
+		@topic
+		struct NodeReply {
+			string uuid;  //消息唯一id
+			@key string toNodeId;  //回执节点
+			string toNodeName;    //节点名
+			@key string srcNodeId;  //原始来源，回执节点
+			string toGroup;      //所在组
+			string replyUuid;  //回执消息uuid
+			@key CommStatus status;
+			string desc;   //执行详情
+			long long createdAt;  //创建消息时间
+			long long updatedAt;  //发送消息时间
+		};
+
+		//1对N批量命令消息
+		@topic
+		struct NodeCmd {
+			string uuid;  //消息唯一id
+			@key string srcNodeId;  //发送节点id
+			string srcNodeName;     //发送节点名  
+			@key string toNodeId;         //如果单个节点处理，填写对应nodeId,否则，填"*",表示所有节点需要处理
+			string toGroup;          //发送给组，组名或者"*",多组用","分格
+			@key CmdType cmdType;         //命令，LS=获取某个目录，DEL=删除文件，MKDIR=创建目录，UPLOAD=上传文件
+			@key string cmd;             //其它命令
+			string paras;           //命令参数，需要查询的目录，删除文件名
+			long long createdAt; //创建消息时间
+			long long updatedAt; //发送消息时间
+		};
+
+		//1对N批量命令消息回执
+		@topic
+		struct NodeCmdReply {
+			string uuid;        //消息唯一id
+			@key string srcNodeId;   //原始来源       
+			string srcNodeName;     //回复消息来源节点名
+			@key string toNodeId;
+			string toNodeName;     //回复消息来源节点名
+			string cmdReplyUuid;  //回复id
+			@key CmdType cmdType;
+			@key CommStatus status;
+			string desc;   //执行详情,可能是json字串
+			FileInfos result;  // 如果是执行ls，需要返回文件列表
+			long long createdAt;  //收到消息时间
+			long long updatedAt;  //发送回执时间
+		};
+
+		//此数据需要动态订阅，如果没有客户端订阅，就不发送,没个节点只有一个日志通道，可以通过文件名来过滤，只展示自己的需要的数据
+		//@topic
+		//struct LogData {
+		//        string uuid;
+		//        @key string srcNodeId;                           //来自哪个节点
+		//        @key string toNodeId;                           //那个节点需要处理，"*"，表示所有
+		//		@key string fileName;                         //文件名
+		//        string newLogs;                          //最新的日志内容
+		// };
+
+	};
+  };
+};

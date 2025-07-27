@@ -1,0 +1,70 @@
+{
+  // 节点模式设置为client
+  "mode": "client",
+
+  // 连接配置
+  "connect": {
+    // client模式下的超时设置
+    "timeout_ms": 0,
+    // 要连接的端点
+    "endpoints": ["tcp/10.10.6.9:7447"]
+  },
+
+  // 监听配置 
+  "listen": {
+    // 监听超时
+    "timeout_ms": 0,
+    // 监听端点
+    "endpoints": ["tcp/0.0.0.0:17447"]
+  },
+
+  // 传输层配置
+  "transport": {
+    // 认证配置
+    // "auth": {
+      // 用户名密码认证
+     //  "usrpwd": {
+     //    "user": "usr2",
+     //    "password": "pwd2"
+     //  }
+    // },
+    
+    // 单播配置(新增推荐配置)
+    "unicast": {
+      "accept_timeout": 10000,
+      "max_sessions": 1000,
+      "max_links": 1
+    },
+
+    // 链路配置(新增推荐配置) 
+    "link": {
+      "tx": {
+        "lease": 10000,
+        "keep_alive": 4,
+        "batch_size": 65535
+      },
+      "rx": {
+        "buffer_size": 65535
+      },
+    },
+	// 认证配置
+	  auth: {
+      /// The configuration of authentication.
+      /// A password implies a username is required.
+      usrpwd: {
+        user: null,
+        password: null
+        /// The path to a file containing the user password dictionary
+        //dictionary_file: ""
+      },
+      //pubkey: {
+        //public_key_pem: null,
+        //private_key_pem: null,
+        //public_key_file: null,
+        //private_key_file: null,
+        //key_size: null,
+        //known_keys_file: null,
+      //},
+    },
+  }
+}

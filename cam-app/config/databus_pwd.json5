@@ -1,0 +1,272 @@
+/// 这个文件试图列出并记录可用的配置元素。
+/// 要更完整地查看配置的结构，请查看 `zenoh/src/config.rs` 中的 `Config` 结构。
+{
+  /// zenoh 运行时将使用的标识符（以小写十六进制表示的无符号 128 位整数 - 不接受前导零）。
+  /// 如果未设置，将使用随机的无符号 128 位整数。
+  /// 警告：此 id 在您的 zenoh 网络中必须是唯一的。
+  // id: "python_12345678_dev",
+
+  /// 节点的模式（router、peer 或 client）
+  mode: "client",
+
+  /// 节点的元数据（名称、位置、DNS 名称等）。任意的 JSON 数据，不被 zenohd 解释，可在管理空间 @/router/<id> 中使用
+  metadata: {
+    name: "sanic",
+    location: "cloud"
+  },
+
+  /// 要连接的端点。例如 tcp/localhost:7447。
+  /// 通过配置端点，可以告诉 zenoh 在启动时连接到哪个路由器/对等节点。
+  connect: {
+    endpoints: [
+      "tcp/10.10.6.107:7447"
+    ],
+  },
+
+  /// 要监听的端点。例如 tcp/localhost:7447。
+  /// 通过配置端点，可以告诉 zenoh 其他路由器、对等节点或客户端可以用来建立 zenoh 会话的端点。
+  listen: {
+    endpoints: [
+      // "<proto>/<address>"
+    ],
+  },
+
+  /// 配置探测机制及其行为
+  scouting: {
+    /// 在客户端模式下，用于探测路由器的时间周期（毫秒），超时后失败
+    timeout: 3000,
+    /// 在对等模式下，用于探测远程对等节点的时间周期（毫秒），之后尝试其他操作
+    delay: 200,
+    /// 多播探测配置。
+    multicast: {
+      /// 是否启用多播探测
+      enabled: true,
+      /// 用于多播探测的套接字
+      address: "224.0.0.224:7446",
+      /// 用于多播探测的网络接口
+      interface: "auto", // 如果未设置或设置为 "auto"，则自动选择接口
+      /// 在 UDP 多播上发现后自动建立会话的 Zenoh 实例类型。
+      /// 接受单个值或路由器、对等节点和客户端的不同值。
+      /// 每个值是 "peer"、"router" 和 "client" 的按位或组合。
+      // autoconnect: { router: "", peer: "router|peer" },
+      /// 是否在 UDP 多播上监听探测消息并回复。
+      listen: true,
+    },
+    /// 八卦探测配置。
+    gossip: {
+      /// 是否启用八卦探测
+      enabled: true,
+      /// 当为 true 时，八卦探测信息会通过多跳传播到本地网络中的所有节点。
+      /// 当为 false 时，八卦探测信息只传播到下一跳。
+      /// 激活多跳八卦意味着更多的探测流量和较低的可扩展性。
+      /// 它主要在使用 "linkstate" 路由模式时有意义，其中子系统中的所有节点都没有直接连接。
+      multihop: false,
+      /// 在八卦上发现后自动建立会话的 Zenoh 实例类型。
+      /// 接受单个值或路由器、对等节点和客户端的不同值。
+      /// 每个值是 "peer"、"router" 和 "client" 的按位或组合。
+      // autoconnect: { router: "", peer: "router|peer" },
+    },
+  },
+
+  /// 数据消息时间戳管理的配置。
+  timestamping: {
+    /// 如果数据消息尚未加时间戳，是否应该加上时间戳。
+    /// 接受单个布尔值或路由器、对等节点和客户端的不同值。
+    enabled: { router: true, peer: false, client: false },
+    /// 是否丢弃带有未来时间戳的数据消息。
+    /// 如果设置为 false（默认），带有未来时间戳的消息将被重新加时间戳。
+    /// 如果禁用时间戳，则忽略时间戳。
+    drop_future_timestamp: false,
+  },
+
+  /// 应用于查询的默认超时时间（毫秒）。
+  queries_default_timeout: 10000,
+
+  /// 要使用的路由策略及其配置。
+  routing: {
+    /// 在路由器中使用的路由策略及其配置。
+    router: {
+      /// 当设置为 true 时，如果路由器检测到直接连接到它的两个对等节点之间没有连接，
+      /// 它将在这两个对等节点之间转发数据。
+      /// 故障转移代理仅在启用八卦发现时有效。
+      peers_failover_brokering: true,
+    },
+    /// 在对等节点中使用的路由策略及其配置。
+    peer: {
+      /// 在对等节点中使用的路由策略。（"peer_to_peer" 或 "linkstate"）。
+      mode: "peer_to_peer",
+    },
+  },
+
+  //  /// 声明聚合策略。
+  //  aggregation: {
+  //      /// 所有包含的订阅者将被聚合到的键表达式列表。
+  //      subscribers: [
+  //        // key_expression
+  //      ],
+  //      /// 所有包含的发布者将被聚合到的键表达式列表。
+  //      publishers: [
+  //        // key_expression
+  //      ],
+  //  },
+
+  /// 配置内部传输参数
+  transport: {
+    unicast: {
+      /// 打开链接时的超时时间（毫秒）
+      accept_timeout: 10000,
+      /// 接受时处于待定状态的最大 zenoh 会话数
+      accept_pending: 100,
+      /// 可以同时存活的最大会话数
+      max_sessions: 1000,
+      /// 每个会话允许的最大传入链接数
+      max_links: 1,
+      /// 启用低延迟传输
+      /// 此选项不会强制使用低延迟传输，实际使用的传输实现将取决于建立程序和对方的设置
+      ///
+      /// 注意：目前，低延迟传输不保留 QoS 优先级。
+      /// 注意：由于上述说明，'lowlatency' 与 'qos' 选项不兼容，因此要启用 'lowlatency'，
+      ///       您需要明确禁用 'qos'。
+      lowlatency: false,
+      /// 在单播通信上启用 QoS。
+      qos: {
+        enabled: true,
+      },
+      /// 在单播通信上启用压缩。
+      /// 压缩功能在会话建立期间进行协商。
+      /// 如果两个 Zenoh 节点都支持压缩，则激活压缩。
+      compression: {
+        enabled: false,
+      },
+    },
+    multicast: {
+      /// 在多播通信上启用 QoS。
+      /// 默认为 false，以实现与 Zenoh-to-Zenoh-Pico 的开箱即用兼容性。
+      qos: {
+        enabled: false,
+      },
+      /// 在多播通信上启用压缩。
+      /// 默认为 false，以实现与 Zenoh-to-Zenoh-Pico 的开箱即用兼容性。
+      compression: {
+        enabled: false,
+      },
+    },
+    link: {
+      /// 用于接受和打开会话的协议白名单（可选）。
+      /// 如果未配置，则自动将所有支持的协议列入白名单。
+      /// 支持的协议有：["tcp" , "udp", "tls", "quic", "ws", "unixsock-stream"]
+      /// 例如，要只启用 "tls" 和 "quic"：
+      //   protocols: ["tls", "quic"],
+      /// 配置链接的 zenoh TX 参数
+      tx: {
+        /// 用于消息序列号的位分辨率。
+        /// 与另一个 Zenoh 实例建立会话时，将使用两个实例中较低的值。
+        /// 接受的值：8bit、16bit、32bit、64bit。
+        sequence_number_resolution: "32bit",
+        /// 向其他 zenoh 节点宣布的链接租约持续时间（毫秒）
+        lease: 10000,
+        /// 一个链接租约持续时间内的保活消息数。如果没有数据发送，将按配置的时间间隔发送保活消息。
+        /// 注意：为了考虑可能的数据包丢失和传输延迟及抖动，
+        ///       将实际的 keep_alive 超时设置为租约时间的四分之一。
+        ///       这与 ITU-T G.8013/Y.1731 规范关于连续连接检查一致，
+        ///       该规范认为如果在目标间隔的 3.5 倍时间内没有收到消息，则链接失败。
+        keep_alive: 4,
+        /// 批处理大小以字节为单位，表示为 16 位无符号整数。
+        /// 因此，最大批处理大小为 2^16-1（即 65535）。
+        /// 默认批处理大小值为最大批处理大小：65535。
+        batch_size: 65535,
+        /// 每个 zenoh 链接都有一个可配置的传输队列
+        queue: {
+          /// 每个优先级队列的大小表示给定队列可以包含的批次数。
+          /// 然后为每个队列分配的内存量是 SIZE_XXX * BATCH_SIZE。
+          /// 如果传输链接 MTU 小于 ZN_BATCH_SIZE，
+          /// 则为每个队列分配的内存量是 SIZE_XXX * LINK_MTU。
+          /// 如果 qos 为 false，则只分配 DATA 优先级。
+          size: {
+            control: 1,
+            real_time: 1,
+            interactive_high: 1,
+            interactive_low: 1,
+            data_high: 2,
+            data: 4,
+            data_low: 4,
+            background: 4,
+          },
+          /// 允许批处理最终进行的初始指数退避时间（纳秒）。
+          /// 较高的值会导致更积极的批处理，但会引入额外的延迟。
+          // backoff: 100,
+          // 专用于传输的线程数
+          // 默认情况下，线程数计算如下：1 + ((#cores - 1) / 4)
+          // threads: 4,
+        },
+      },
+      /// 配置链接的 zenoh RX 参数
+      rx: {
+        /// 每个链接的接收缓冲区大小（字节）
+        /// 默认的 rx_buffer_size 值与默认的批处理大小相同：65335。
+        /// 对于非常高吞吐量的场景，可以增加 rx_buffer_size 以容纳更多的飞行中数据。
+        /// 这在处理大消息时特别相关。
+        /// 例如，对于 16MiB 的 rx_buffer_size，将值设置为：16777216。
+        buffer_size: 65535,
+        /// 接收端的最大分片缓冲区大小。
+        /// 大于配置大小的分片消息将被丢弃。
+        /// 默认值为 1GiB。这在大多数场景下都能工作。
+        /// 注意：如果您在内存受限的设备上操作，请减少该值。
+        max_message_size: 1073741824,
+      },
+      /// 配置 TLS 特定参数
+      tls: {
+        /// 用于验证服务器或客户端密钥和证书的证书颁发机构证书的路径，具体取决于节点的模式。
+        /// 如果在路由器模式下未指定，则使用默认的 WebPKI 证书。
+        root_ca_certificate: null,
+        /// TLS 服务器私钥的路径
+        // server_private_key: null,
+        /// TLS 服务器公共证书的路径
+        // server_certificate: null,
+        /// 客户端身份验证，如果为 true，则启用 mTLS（双向身份验证）
+        // client_auth: false,
+        /// TLS 客户端私钥的路径
+        // client_private_key: null,
+        /// TLS 客户端公共证书的路径
+        // lient_certificate: null,
+        // 是否使用服务器名称验证，如果设置为 false，zenoh 在验证服务器时将忽略证书的通用名称。
+        // 这可能很危险，因为您的 CA 可能已经为 foo.com 签署了服务器证书，后来却用于托管 baz.com 的服务器。
+        // 如果您希望您的 CA 验证 baz.com 的服务器确实是 baz.com，请将此设置为 true（默认）。
+        // server_name_verification: null,
+      },
+    },
+    /// 共享内存配置
+    shared_memory: {
+      enabled: false,
+    },
+    /// 访问控制配置
+    auth: {
+      /// 身份验证的配置。
+      /// 密码意味着需要用户名。
+      usrpwd: {
+        user: "usr1",
+        password: "pwd1",
+        /// 包含用户密码字典的文件路径
+        dictionary_file: null,
+      },
+      pubkey: {
+        public_key_pem: null,
+        private_key_pem: null,
+        public_key_file: null,
+        private_key_file: null,
+        key_size: null,
+        known_keys_file: null,
+      },
+    },
+  },
+
+  /// 配置管理空间
+  /// 不稳定：这部分配置按广告工作，但可能在未来的版本中改变
+  adminspace: {
+    // 管理空间的读和/或写权限
+    permissions: {
+      read: true,
+      write: false,
+    },
+  },
+}

@@ -1,0 +1,56 @@
+{
+    "version": 3,
+    "vendor": {
+        "conan": {}
+    },
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 15,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "conan-release",
+            "displayName": "'conan-release' config",
+            "description": "'conan-release' configure using 'Unix Makefiles' generator",
+            "generator": "Unix Makefiles",
+            "cacheVariables": {
+                "CMAKE_POLICY_DEFAULT_CMP0091": "NEW",
+                "CMAKE_BUILD_TYPE": "Release"
+            },
+            "environment": {
+                "ACLOCAL_PATH": "$penv{ACLOCAL_PATH}:/home/tao/.conan2/p/libto8cf95cb727c3e/p/res/aclocal",
+                "AUTOMAKE_CONAN_INCLUDES": "$penv{AUTOMAKE_CONAN_INCLUDES}:/home/tao/.conan2/p/libto8cf95cb727c3e/p/res/aclocal",
+                "AUTOCONF": "/home/tao/.conan2/p/autocf2af015330354/p/bin/autoconf",
+                "AUTORECONF": "/home/tao/.conan2/p/autocf2af015330354/p/bin/autoreconf",
+                "AUTOHEADER": "/home/tao/.conan2/p/autocf2af015330354/p/bin/autoheader",
+                "AUTOM4TE": "/home/tao/.conan2/p/autocf2af015330354/p/bin/autom4te",
+                "M4": "/home/tao/.conan2/p/m43fe61932e2887/p/bin/m4"
+            },
+            "toolchainFile": "conan_toolchain.cmake",
+            "binaryDir": "/home/tao/git/sadip"
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "conan-release",
+            "configurePreset": "conan-release",
+            "jobs": 12
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "conan-release",
+            "configurePreset": "conan-release",
+            "environment": {
+                "LD_LIBRARY_PATH": "/home/tao/.conan2/p/b/aws-se845069533082/p/lib:/home/tao/.conan2/p/b/poco9ce48419666f1/p/lib:/home/tao/.conan2/p/b/soci0dcdefae0a221/p/lib:/home/tao/.conan2/p/opensd679a56fa2aca/p/lib:/home/tao/.conan2/p/zlib8781ef98e8c2c/p/lib:$penv{LD_LIBRARY_PATH}",
+                "DYLD_LIBRARY_PATH": "/home/tao/.conan2/p/b/aws-se845069533082/p/lib:/home/tao/.conan2/p/b/poco9ce48419666f1/p/lib:/home/tao/.conan2/p/b/soci0dcdefae0a221/p/lib:/home/tao/.conan2/p/opensd679a56fa2aca/p/lib:/home/tao/.conan2/p/zlib8781ef98e8c2c/p/lib:$penv{DYLD_LIBRARY_PATH}",
+                "ALSA_CONFIG_DIR": "/home/tao/.conan2/p/libal0d970897e8a02/p/res/alsa",
+                "ACLOCAL_PATH": "$penv{ACLOCAL_PATH}:/home/tao/.conan2/p/libto8cf95cb727c3e/p/res/aclocal",
+                "AUTOMAKE_CONAN_INCLUDES": "$penv{AUTOMAKE_CONAN_INCLUDES}:/home/tao/.conan2/p/libto8cf95cb727c3e/p/res/aclocal",
+                "PATH": "/home/tao/.conan2/p/autom480a421c82a75/p/bin:/home/tao/.conan2/p/autocf2af015330354/p/bin:/home/tao/.conan2/p/m43fe61932e2887/p/bin:/home/tao/.conan2/p/opensd679a56fa2aca/p/bin:$penv{PATH}",
+                "M4": "/home/tao/.conan2/p/m43fe61932e2887/p/bin/m4"
+            }
+        }
+    ]
+}

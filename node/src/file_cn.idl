@@ -1,0 +1,50 @@
+﻿module cn{
+  module seisys {
+    module dds {
+
+        typedef sequence<octet> fileSeq;
+
+
+        @topic
+        struct FileData {
+                string uuid;
+                @key string srcNodeId;                           //来自哪个节点
+                @key string toNodeId;                           //那个节点需要处理，"*"，表示所有
+                string fileName;                         //文件名
+                string saveFileName;                     //保存文件名
+                string  subDir;                           //目标端相对路径
+                boolean isEnd;                               //是否结束,需要触发文件合并
+
+                unsigned long fileTotalSize;                    //文件总大小
+                long long fModifyTime;                      //文件修改时间
+
+                unsigned long blockSeq;                              //文件数据包序号(0~N-1)
+                unsigned long totalBlockNum;                         //文件数据包总块数（N）
+
+                fileSeq  blockContent;                      //文件内容
+                unsigned long blockContentLen;                   //当前文件内容长度
+
+                string transferId;                        //当前文件传输唯一标识，当前文件内容的md5
+                string md5;                               //文件md5，用于内容校验
+         };
+
+        @topic
+        struct FileDataReply {
+                string uuid;
+                @key string srcNodeId;                           //回执来自哪个节点
+                @key string toNodeId;                           //那个节点需要处理，"*"，表示所有
+                string fileName;
+                string replyUuid;                          //对应file块的uuid
+                string  subDir;
+                boolean isEnd;
+                unsigned long blockSeq;
+                unsigned long totalBlockNum;
+                unsigned long fileTotalSize;
+                sequence<unsigned long> blockLosts;         //缺失的所有文件id
+                long state;                                 //0 未知，1，传输中，2，发送端传输完成，3，需要重转指定序列号，4，需要完全重传,5,接收端确认成功，6,文件读取异常，任务失败
+        };
+
+
+    };
+  };
+};

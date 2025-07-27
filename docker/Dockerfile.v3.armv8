@@ -1,0 +1,430 @@
+FROM arm64v8/ubuntu:22.04
+ENV DEBIAN_FRONTEND=noninteractive 
+ENV LANG C.UTF-8
+
+#USER root
+#RUN sed -i 's@http://ports.ubuntu.com/ubuntu-ports/@http://repo.huaweicloud.com/ubuntu/@g' /etc/apt/sources.list
+#RUN sed -i 's@http://archive.ubuntu.com/ubuntu/@http://mirrors.huaweicloud.com/ubuntu/@g' /etc/apt/sources.list
+#RUN sed -i 's@http://archive.ubuntu.com/ubuntu/@http://mirrors.huaweicloud.com/ubuntu/@g' /etc/apt/sources.list.d/ubuntu.sources 
+RUN sed -i 's@http://ports.ubuntu.com/ubuntu-ports/@http://mirrors.aliyun.com/ubuntu-ports/@g' /etc/apt/sources.list
+USER root
+
+
+# 安装gcc g++
+RUN mkdir -p /root/sadip
+#COPY sadip/install_gcc11.sh  /root/install_gcc11.sh
+#RUN bash /root/install_gcc11.sh
+#RUN apt install -y gcc g++
+
+#COPY sadip/install_gcc11.sh  /root/install_gcc11.sh
+#RUN bash /root/install_gcc9.sh
+
+# COPY sadip/install_cmake.sh  /root/install_cmake.sh
+# RUN bash /root/install_cmake.sh
+
+# sadip/install_podman.sh  /root/install_podman.sh
+# RUN bash /root/install_podman.sh
+
+
+RUN apt update &&  apt install -y software-properties-common gcc g++  git cmake libasio-dev libtinyxml2-dev  libp11-dev libengine-pkcs11-openssl softhsm2 libengine-pkcs11-openssl librdkafka-dev openjdk-11-jdk python3-pip 
+RUN apt install -y libiodbc2 libiodbc2-dev libmysqlclient-dev libpq-dev  p11-kit libyaml-cpp-dev liblz4-dev libzstd-dev uuid-dev libssl-dev libcurl4-openssl-dev 
+RUN apt install -y libboost-filesystem-dev libboost-iostreams-dev libboost-system-dev libboost-thread-dev libboost-regex-dev libboost-chrono-dev libboost-atomic-dev
+
+RUN openssl engine pkcs11 -t
+
+
+
+#编译安装fastdds
+RUN mkdir -p /root/git
+WORKDIR /root/git
+
+#COPY sadip/fastdds_install.sh  /root/fastdds_install.sh 
+#RUN bash /root/fastdds_install.sh
+
+RUN mkdir -p ~/git
+
+RUN  add-apt-repository universe && apt update
+
+# 安装必要的构建工具和依赖
+RUN apt-get install -y \
+    build-essential \
+    git \
+    libgpgme-dev \
+    libassuan-dev \
+    libdevmapper-dev \
+    libglib2.0-dev \
+    libbtrfs-dev \
+    libseccomp-dev \
+    pkg-config \
+    libc6-dev \
+    runc \
+    wget \
+    nano \
+    ca-certificates \
+    iptables \
+    software-properties-common \
+    && rm -rf /var/lib/apt/lists/*
+
+# 设置 Go 环境变量
+ENV PATH="/usr/local/go/bin:${PATH}"
+ENV GOPATH="/go"
+
+#RUN  apt-get install -y conmon #fuse-overlayfs
+# 安装 Go 1.20
+RUN wget --no-check-certificate https://go.dev/dl/go1.21.7.linux-arm64.tar.gz \
+    && tar -C /usr/local -xzf go1.21.7.linux-arm64.tar.gz \
+    && rm go1.21.7.linux-arm64.tar.gz
+
+
+RUN cd ~/git && git clone https://github.com/containers/conmon.git && cd conmon && make && make install
+
+# 克隆并编译安装 Podman
+RUN cd ~/git && git clone https://github.com/containers/podman.git && cd podman && git checkout v4.9.2 && make BUILDTAGS="seccomp" GOARCH=arm64 && make install
+
+#RUN cd ~/git && git clone https://github.com/openssl/openssl.git
+#RUN cd ~/git/openssl && git checkout OpenSSL_1_1_1 && ./config --prefix=/usr/local --openssldir=/usr/local && make -j$(nproc) && make install
+#RUN cd ~/git && git clone https://github.com/curl/curl.git 
+#RUN cd ~/git/curl && git checkout curl-7_88_1 && mkdir -p build && cd build && cmake .. -DCMAKE_USE_OPENSSL=ON -DOPENSSL_ROOT_DIR=/usr/local/ -DCMAKE_CXX_FLAGS="-fPIC"  #-DCMAKE_INSTALL_PREFIX=/usr/local && make -j$(nproc) && make install 
+
+
+RUN cd ~/git && git clone --branch release-1.11.0 https://github.com/google/googletest googletest-distribution
+RUN cd ~/git/googletest-distribution/ && mkdir build && cd build/ && cmake .. &&  make -j$(nproc) &&  make install
+RUN cd ~/git && git clone https://github.com/eProsima/foonathan_memory_vendor.git
+RUN cd ~/git && mkdir -p foonathan_memory_vendor/build && cd foonathan_memory_vendor/build &&git checkout v1.3.1 \
+&& cmake .. -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fPIC"  -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_SHARED_LIBS=ON&&cmake --build . --parallel $(nproc)  --target install
+RUN cd ~/git && git clone https://github.com/eProsima/Fast-CDR.git
+RUN cd ~/git &&mkdir Fast-CDR/build && cd Fast-CDR/build && git checkout v1.1.0 && cmake .. -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fPIC"  -DCMAKE_INSTALL_PREFIX=/usr/local &&   cmake --build . --parallel $(nproc)  --target install
+RUN cd ~/git &&git clone https://github.com/eProsima/Fast-DDS.git
+RUN cd ~/git &&mkdir Fast-DDS/build && cd Fast-DDS/build && git checkout v2.11.3&& cmake .. -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DFASTDDS_STATISTICS=OFF -DCMAKE_CXX_FLAGS="-fPIC"  -DCMAKE_INSTALL_PREFIX=/usr/local &&  cmake --build . --parallel $(nproc)  --target install
+
+#cd ~/git &&  git clone https://github.com/eProsima/Fast-DDS-python.git && cd Fast-DDS-python &&git checkout v1.4.0 \
+# && mkdir -p fastdds_python/build &&   cd fastdds_python/build && cmake ..    &&  cmake --build . --parallel $(nproc)  --target install
+
+# RUN cd ~/git && git clone https://github.com/protocolbuffers/protobuf.git
+# RUN cd protobuf && git checkout  v3.8.0 && git submodule update --init --recursive && mkdir -p cmake/build/ && cd cmake/build/ \
+#    && cmake .. -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fPIC"  &&  cmake --build . --parallel $(nproc)  --target install
+
+# RUN cd ~/git && git clone https://github.com/eclipse/paho.mqtt.c.git
+# RUN cd paho.mqtt.c && git checkout v1.3.8 \
+#     && cmake -Bbuild -H. -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fPIC" -DPAHO_ENABLE_TESTING=OFF -DPAHO_BUILD_STATIC=ON  -DPAHO_WITH_SSL=ON -DPAHO_HIGH_PERFORMANCE=ON \
+#     &&  cmake --build build --target install \
+#     &&ldconfig
+
+# RUN cd ~/git && git clone --recurse-submodules https://github.com/aws/aws-sdk-cpp
+# RUN cd aws-sdk-cpp && git checkout 1.11.327 && mkdir build && cd build && cmake .. -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fPIC"  \
+#     -DCMAKE_PREFIX_PATH=/usr/local \
+#     -DBUILD_ONLY="s3" &&  cmake --build . --parallel $(nproc)  --config=Release &&  cmake --install . --config=Release
+
+RUN cd ~/git && git clone https://github.com/CppMicroServices/CppMicroServices.git 
+RUN cd CppMicroServices && git checkout v3.7.6 && git submodule init && git submodule update \
+&& mkdir -p build && cd build && cmake .. -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fPIC"  -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_SHARED_LIBS=ON \
+&&  cmake --build . --parallel $(nproc)  --target install 
+
+
+# RUN cd ~/git &&  git clone https://github.com/SOCI/soci.git
+# RUN cd soci && git checkout v4.0.3 && mkdir build && cd build \
+#     && cmake .. -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fPIC"  -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_SHARED_LIBS=ON -DSOCI_CXX11=ON && cmake --build . --parallel $(nproc)  --target install
+
+# RUN cd ~/git && git clone -b poco-1.12.4-release https://github.com/pocoproject/poco.git
+# RUN cd poco && mkdir cmake-build && cd cmake-build \
+#     && cmake .. -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fPIC" -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_SHARED_LIBS=ON -DENABLE_CPPPARSER=ON -DENABLE_XML=ON -DENABLE_JSON=ON &&  cmake --build . --parallel $(nproc)  --target install
+
+#RUN git config --global http.sslverify false
+#COPY spdlog ~/git/spdlog 
+RUN cd ~/git && git clone https://github.com/gabime/spdlog
+RUN cd spdlog && git checkout v1.12.0 && mkdir build && cd build && cmake .. -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fPIC"  -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_SHARED_LIBS=ON && cmake --build . --parallel $(nproc)  --target install
+
+
+#dev_util
+
+# RUN cd ~/git && git clone https://github.com/eProsima/dev-utils.git && cd dev-utils && git checkout v0.4.0 && mkdir -p build/cmake_utils && cd build/cmake_utils \
+#     && cmake ../../../dev-utils/cmake_utils -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fPIC" \
+#     &&  cmake --build . --parallel $(nproc)  --target install \
+#     && cd ../../../dev-utils/ && mkdir -p build/cpp_utils && cd build/cpp_utils \
+#     && cmake ../../../dev-utils/cpp_utils -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fPIC" \
+#     &&  cmake --build . --parallel $(nproc)  --target install
+
+#dds_pipe
+
+# RUN cd ~/git &&  git clone https://github.com/eProsima/DDS-Pipe.git && cd DDS-Pipe && git checkout v0.2.0 && mkdir -p build/ddspipe_core && cd build/ddspipe_core \
+#     && cmake ../../../DDS-Pipe/ddspipe_core -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fPIC" \
+#     &&  cmake --build . --parallel $(nproc)  --target install 
+# RUN cd ~/git &&  cd ~/git/DDS-Pipe && mkdir -p build/ddspipe_participants && cd build/ddspipe_participants \
+#     && cmake ~/git/DDS-Pipe/ddspipe_participants/ -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fPIC" \
+#     &&  cmake --build . --parallel $(nproc)  --target install 
+# RUN cd ~/git &&  cd ~/git/DDS-Pipe && mkdir -p build/ddspipe_yaml && cd build/ddspipe_yaml \
+#     && cmake ~/git/DDS-Pipe/ddspipe_yaml/ -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fPIC" \
+#     &&  cmake --build . --parallel $(nproc)  --target install
+
+# apt install libasio-dev libtinyxml2-dev libyaml-cpp-dev -y
+
+# ddsrecorder_participants
+# RUN cd ~/git && git clone --recurse-submodules https://github.com/eProsima/DDS-Record-Replay.git  && cd DDS-Record-Replay && git checkout v0.2.0  && mkdir -p build/ddsrecorder_participants \
+#     && cd build/ddsrecorder_participants && cmake ../../../DDS-Record-Replay/ddsrecorder_participants \
+#     -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fPIC" -DCMAKE_INSTALL_PREFIX=/usr/local && cmake --build . --parallel $(nproc)  --target install
+
+# ddsrecorder_yaml
+# RUN cd ~/git && cd DDS-Record-Replay && mkdir -p build/ddsrecorder_yaml && cd build/ddsrecorder_yaml \
+#     && cmake ~/git/DDS-Record-Replay/ddsrecorder_yaml -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fPIC" \
+#     -DCMAKE_INSTALL_PREFIX=/usr/local &&  cmake --build . --parallel $(nproc)  --target install
+
+# ddsrecorder
+# RUN cd ~/git && cd DDS-Record-Replay && mkdir -p build/ddsrecorder_tool && cd build/ddsrecorder_tool \
+#     && cmake ~/git/DDS-Record-Replay/ddsrecorder -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fPIC"  -DCMAKE_INSTALL_PREFIX=/usr/local \
+#     &&   cmake --build . --parallel $(nproc)  --target install
+
+# ddsreplayer
+# RUN cd ~/git && cd DDS-Record-Replay && mkdir -p build/ddsreplayer_tool && cd build/ddsreplayer_tool \
+#     && cmake ~/git/DDS-Record-Replay/ddsreplayer -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fPIC"  -DCMAKE_INSTALL_PREFIX=/usr/local \
+#     &&   cmake --build . --parallel $(nproc)  --target install 
+
+# ddsrouter
+# RUN pip install -U jsonschema
+#RUN apt install libasio-dev libtinyxml2-dev libyaml-cpp-dev -y
+
+# RUN cd ~/git && git clone https://github.com/eProsima/DDS-Router.git && cd DDS-Router && git checkout v2.0.0 && mkdir -p mkdir build/ddsrouter_core \
+#    && cd build/ddsrouter_core && cmake ~/git/DDS-Router/ddsrouter_core  -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fPIC"  -DCMAKE_INSTALL_PREFIX=/usr/local \
+#    &&   cmake --build . --parallel $(nproc)  --target install
+
+# ddsrouter_yaml
+# RUN cd ~/git && cd ~/git/DDS-Router && mkdir -p build/ddsrouter_yaml && cd build/ddsrouter_yaml \
+#     && cmake ~/git/DDS-Router/ddsrouter_yaml -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fPIC"  -DCMAKE_INSTALL_PREFIX=/usr/local \
+#     &&   cmake --build . --parallel $(nproc)  --target install
+
+# ddsrouter_tool
+# RUN cd ~/git && cd ~/git/DDS-Router && mkdir -p build/ddsrouter_tool &&cd build/ddsrouter_tool \
+#     && cmake ~/git/DDS-Router/tools/ddsrouter_tool -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fPIC"  -DCMAKE_INSTALL_PREFIX=/usr/local \
+#     &&   cmake --build . --parallel $(nproc)  --target install
+
+#RUN cd ~/git/sadip/node/src/ && fastddsgen node.idl -replace && fastddsgen file.idl -replace 
+
+
+#RUN apt-get install -y liblz4-dev -y
+
+
+# RUN cd ~/git && git clone https://github.com/lz4/lz4.git
+# RUN cd ~/git && cd lz4/build/cmake && mkdir build && cd build && git checkout v1.9.4 \
+# 	&& cmake .. -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fPIC"  -DCMAKE_INSTALL_PREFIX=/usr/local  &&  cmake --build . --parallel $(nproc)  --target install
+# RUN ln -s /usr/local/lib/cmake/lz4/lz4Config.cmake /usr/local/lib/cmake/lz4/LZ4Config.cmake &&  ln -s /usr/local/lib/cmake/LZ4 /usr/local/lib/cmake/lz4
+
+
+# RUN cd ~/git && git clone https://github.com/confluentinc/librdkafka.git 
+#COPY librdkafka ~/git/librdkafka
+# RUN cd ~/git && cd librdkafka && git checkout v2.3.0  && mkdir build && cd build \
+#     && cmake .. -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release  -DCMAKE_CXX_FLAGS="-fPIC"  -DCMAKE_INSTALL_PREFIX=/usr/local  && cmake --build . --parallel $(nproc)  --target install
+
+#RUN apt-get install -y chrony
+RUN apt-get update && apt-get install -y libreadline-dev libncurses-dev bison 
+#RUN apt-get autoclean -y && apt-get clean -y && apt-get autoremove -y
+
+RUN git clone https://github.com/mlichvar/chrony && cd chrony && ./configure && make -j8 && cp chronyc /root/sadip && cp chronyd /root/sadip
+
+# RUN wget https://github.com/nlohmann/json/archive/refs/tags/v3.11.2.tar.gz \
+#     && tar -xzvf v3.11.2.tar.gz \
+#     && cd json-3.11.2 \
+#     && mkdir build && cd build \
+#     && cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local -DJSON_BuildTests=OFF \
+#     && make \
+#     && make install \
+#     && cd / \
+#     && rm -rf /tmp/json-3.11.2 /tmp/v3.11.2.tar.gz
+
+ENV TZ=Asia/Shanghai
+RUN apt update && apt install -y tzdata curl \
+    && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \
+    && echo ${TZ} > /etc/timezone \
+    && dpkg-reconfigure --frontend noninteractive tzdata 
+
+
+# 安装 K3s
+ENV INSTALL_K3S_MIRROR cn
+#RUN curl -sfL https://rancher-mirror.rancher.cn/k3s/k3s-install.sh | INSTALL_K3S_VERSION=v1.26.15+k3s1 INSTALL_K3S_SKIP_ENABLE=true INSTALL_K3S_SKIP_START=true sh -
+RUN curl -sfL https://rancher-mirror.rancher.cn/k3s/k3s-install.sh | \
+    INSTALL_K3S_VERSION=v1.26.15+k3s1 \
+    INSTALL_K3S_SKIP_ENABLE=true \
+    INSTALL_K3S_SKIP_START=true \
+    K3S_KUBECONFIG_MODE="644" \
+    INSTALL_K3S_EXEC="server --flannel-backend=host-gw --cluster-cidr=172.20.0.0/16 --service-cidr=172.21.0.0/16" \
+    sh -
+
+RUN ln -s /usr/local/bin/k3s /root/sadip/k3s
+
+# COPY node_exporter-1.7.0.linux-amd64/node_exporter /root/sadip/node_exporter
+
+RUN mkdir -p /root/sadip && \
+    wget -O /tmp/node_exporter.tar.gz https://github.com/prometheus/node_exporter/releases/download/v1.7.0/node_exporter-1.7.0.linux-amd64.tar.gz && \
+    tar -xzf /tmp/node_exporter.tar.gz -C /tmp && \
+    mv /tmp/node_exporter-1.7.0.linux-amd64/node_exporter /root/sadip/node_exporter && \
+    chmod +x /root/sadip/node_exporter && \
+    rm -rf /tmp/node_exporter.tar.gz /tmp/node_exporter-1.7.0.linux-amd64
+
+RUN mkdir -p /root/git/
+
+
+
+# install pip install conan
+
+RUN apt-get install -y python3 python3-pip && \
+    pip3 install conan 
+	
+# 安装X11和其他相关依赖
+RUN apt-get install -y \
+    libx11-dev libx11-xcb-dev libfontenc-dev libice-dev libsm-dev libxau-dev libxaw7-dev \
+    libxcomposite-dev libxcursor-dev libxdamage-dev libxext-dev libxfixes-dev libxi-dev \
+    libxinerama-dev libxkbfile-dev libxmu-dev libxmuu-dev libxpm-dev libxrandr-dev \
+    libxrender-dev libxres-dev libxss-dev libxtst-dev libxv-dev libxxf86vm-dev \
+    libxcb-glx0-dev libxcb-render0-dev libxcb-render-util0-dev libxcb-xkb-dev \
+    libxcb-icccm4-dev libxcb-image0-dev libxcb-keysyms1-dev libxcb-randr0-dev \
+    libxcb-shape0-dev libxcb-sync-dev libxcb-xfixes0-dev libxcb-xinerama0-dev \
+    libxcb-dri3-dev libxcb-cursor-dev libxcb-dri2-0-dev libxcb-present-dev \
+    libxcb-composite0-dev libxcb-ewmh-dev libxcb-res0-dev \
+    libxcb-util-dev libxcb-util0-dev \
+    build-essential gcc g++ make cmake && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+	
+# 创建正确的 Conan 配置文件并确保设置了 package_manager:mode
+RUN mkdir -p /root/.conan2/profiles && \
+    echo "[settings]" > /root/.conan2/profiles/default && \
+    echo "arch=armv8" >> /root/.conan2/profiles/default && \
+    echo "build_type=Release" >> /root/.conan2/profiles/default && \
+    echo "compiler=gcc" >> /root/.conan2/profiles/default && \
+    echo "compiler.cppstd=gnu17" >> /root/.conan2/profiles/default && \
+    echo "compiler.libcxx=libstdc++11" >> /root/.conan2/profiles/default && \
+    echo "compiler.version=11" >> /root/.conan2/profiles/default && \
+    echo "os=Linux" >> /root/.conan2/profiles/default 
+	
+# 安装 Rust
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
+     # 将 Rust 添加到 PATH
+     . $HOME/.cargo/env && \
+     rustc --version && \
+     cargo --version
+	
+
+COPY sadip/build_zenoh.sh  /root/git/
+RUN cd /root/git/ && bash build_zenoh.sh  release 1.2.1
+
+ENV PATH="/root/.cargo/bin:${PATH}"
+	
+COPY sadip /root/git/sadip
+RUN mkdir -p /root/.hwinfo && cp sadip/node/src/hwinfo/scripts/* /root/.hwinfo
+
+
+RUN cd /root/git/sadip && bash ci_node_release.sh 
+
+	
+#RUN cd /root/git/sadip && \
+#    && mkdir -p build && cd build && rm -rf * \
+#    && cmake .. -DBUILD_TESTING=OFF -DCMAKE_CXX_FLAGS="-fPIC"  -DCMAKE_INSTALL_PREFIX=/root/sadip \
+#    && cmake --build . --parallel $(nproc)  --target install
+	
+	
+RUN cd /root/git/sadip && bash copy_release_libs.sh 
+
+RUN mkdir -p /root/default && cp -r /root/git/sadip/config/* /root/default && cp /root/git/sadip/run_x64.sh /root/sadip/run.sh
+
+# RUN cp /root/sadip/bin/* /root/sadip/ 
+# RUN cp /root/sadip/lib/* /root/sadip/
+# RUN cp /usr/local/bin/ddsrouter /root/sadip/
+
+RUN apt update && apt install -y openssh-server
+RUN echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
+RUN echo "Port 2023" >> /etc/ssh/sshd_config
+RUN echo "ListenAddress 0.0.0.0" >> /etc/ssh/sshd_config
+RUN echo "ListenAddress ::" >> /etc/ssh/sshd_config
+# 确保SSH服务使用正确的配置
+RUN echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config
+RUN sed -i 's/^#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+
+RUN mkdir -p /run/sshd && chown root:root /run/sshd && chmod 755 /run/sshd && chown -R root:root /run
+
+RUN /etc/init.d/ssh restart
+
+RUN apt install -y python3-pip slirp4netns containernetworking-plugins 
+RUN mkdir -p ~/.pip 
+COPY sadip/config/pip.conf ~/.pip/pip.conf
+
+RUN pip3 install podman-compose  -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+RUN cp -r /root/git/sadip/config/containers /etc/
+
+COPY sadip/config/shadow  /etc/
+COPY sadip/config/registries.conf  /etc/containers/registries.conf
+COPY sadip/sync_time_loop.sh  /root/sadip/sync_time_loop.sh
+RUN chmod +x /root/sadip/sync_time_loop.sh
+RUN cp /root/sadip/bin/node /root/sadip/
+#RUN mkdir -p /root/sadip/apps/ && cp /root/sadip/bin/* /root/sadip/apps/ && cp /root/sadip/lib/* /root/sadip/apps/
+
+RUN apt-get install -y fuse-overlayfs containernetworking-plugins 
+
+RUN apt-get install -y ansible
+RUN mkdir -p /home/dgtw/app && mkdir -p /home/dgtw/logs && mkdir -p /home/dgtw/base && mkdir -p /home/yzc
+#RUN ln -s /home/dgtw /root/sadip/apps/dgtw
+#RUN ln -s /home/yzc /root/sadip/apps/yzc
+#RUN ln -s /etc/hosts /root/sadip/hosts
+
+# 配置 Ansible
+RUN mkdir -p /etc/ansible
+RUN touch /etc/ansible/ansible.cfg
+
+# 禁用 Ansible 的弃用警告和主机密钥检查
+RUN echo "deprecation_warnings = False" >> /etc/ansible/ansible.cfg && \
+    echo "host_key_checking = False" >> /etc/ansible/ansible.cfg
+	
+# 修改 SSH 客户端配置，禁用严格主机密钥检查
+RUN mkdir -p /root/.ssh
+RUN echo "StrictHostKeyChecking no" >> /root/.ssh/config
+RUN echo 'root:Seisys@123456' | chpasswd
+# 生成SSH密钥
+RUN ssh-keygen -t rsa -f /root/.ssh/id_rsa -N ''
+# 将公钥添加到authorized_keys
+RUN cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys
+# 设置正确的权限
+RUN chmod 700 /root/.ssh && chmod 600 /root/.ssh/authorized_keys
+
+# 更新包列表并安装 Ansible 和其他必要的工具
+RUN apt-get install -y \
+    openssh-client \
+    iputils-ping iproute2 \
+    sqlite3 \
+    net-tools \
+    telnet \
+    sshpass \
+	nano \
+    vim 
+
+RUN apt-get autoclean -y && apt-get clean -y && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
+
+RUN rm -rf /root/git
+
+
+RUN mkdir -p /root/sadip
+WORKDIR /root/sadip
+
+RUN echo "Cleaning Conan cache..."
+RUN conan cache clean "*" --build
+RUN conan cache clean "*" --download
+RUN conan cache clean "*" --source
+
+
+
+# 添加 registries.yaml 配置
+RUN mkdir -p /etc/rancher/k3s/
+COPY sadip/config/k3s/registries.yaml  /etc/rancher/k3s/registries.yaml
+
+COPY sadip/run_x64.sh  /root/sadip/run.sh
+RUN chmod +x /root/sadip/run.sh
+
+RUN mkdir -p  /var/lib/containers/storage/volumes
+RUN ln -s /usr/local/bin/podman podman
+
+ENV PATH=$PATH:/root/sadip/bin/
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib/
+# 暴露 K3s API 服务器端口
+EXPOSE 6443
+#ENV DOCKER_HOST tcp://localhost:2376
+#ENTRYPOINT ["/usr/bin/tini", "--"]
+
+CMD ["/bin/bash","run.sh"]
+

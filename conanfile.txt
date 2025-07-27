@@ -1,0 +1,82 @@
+#windows 必须安装mysql 8.4.3,fastdds 2.11.3 spdlog必须手工编译（不兼容）,linux需要安装mysql客户端和编译fastdds,spdlog,参考dockerfile
+[requires]
+zlib/1.3.1
+openssl/1.1.1v
+nlohmann_json/3.11.2
+libmysqlclient/8.1.0
+#mariadb-connector-c/3.1.12
+boost/1.83.0
+librdkafka/2.6.1
+#fast-dds/2.11.2
+protobuf/3.21.12
+#spdlog/1.12.0
+#aws-c-common/0.9.15
+aws-sdk-cpp/1.11.352
+#bzip2/1.0.8
+poco/1.12.4
+soci/4.0.3
+opencl-headers/2023.12.14
+opencl-clhpp-headers/2023.12.14
+opencl-icd-loader/2023.12.14
+rapidjson/1.1.0
+
+[generators]
+CMakeDeps
+CMakeToolchain
+
+
+
+[imports]
+bin, *.dll -> ./bin # Windows
+lib, *.so* -> ./lib # Linux
+lib, *.dylib* -> ./lib # macOS
+
+[options]
+# AWS SDK 核心选项 - 最小化构建
+aws-sdk-cpp/*:min_size=True
+#ws-sdk-cpp/*:shared=True
+aws-sdk-cpp/*:build_tools=False
+aws-sdk-cpp/*:custom_memory_management=False
+aws-sdk-cpp/*:cpp_standard=17
+aws-sdk-cpp/*:with_openssl=True
+#aws-c-common/*:shared=True
+
+# 确保启用核心组件和必要服务
+aws-sdk-cpp/*:core=True
+aws-sdk-cpp/*:config=True
+aws-sdk-cpp/*:s3=True
+aws-sdk-cpp/*:sts=True
+aws-sdk-cpp/*:kms=True
+aws-sdk-cpp/*:transfer=True    # 添加传输支持
+aws-sdk-cpp/*:http=True       # 确保 HTTP 支持被启用
+
+# POCO options
+poco/*:shared=True
+poco/*:enable_data_sqlite=False
+poco/*:enable_data_mysql=False
+poco/*:enable_data_postgresql=False
+poco/*:enable_data_odbc=False
+poco/*:enable_mongodb=True
+
+# Other options
+sqlite3/*:build_executable=False
+sqlite3/*:enable_column_metadata=True
+openssl/*:shared=True
+zlib/*:shared=True
+
+# SOCI options
+soci/*:shared=True
+soci/*:empty=True
+soci/*:with_sqlite3=True
+soci/*:with_postgresql=True
+soci/*:with_mysql=True
+soci/*:with_odbc=True
+soci/*:with_boost=True
+
+
+
+
+
+
+
+

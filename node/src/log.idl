@@ -1,0 +1,13 @@
+﻿      module cn {
+        module seisys {
+          module dds {
+            struct LogData {
+              string uuid;
+              string srcNodeId;
+              string toNodeId;
+              string fileName;
+              string newLogs;
+            };
+          };
+        };
+      };

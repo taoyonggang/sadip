@@ -1,0 +1,102 @@
+syntax = "proto3";
+
+package cn.seisys.dds;
+
+message Cam {
+    string msgId = 1;
+    string srcNodeId = 2;
+    string toNodeId = 3;
+    int32 msgType = 4;
+    uint32 length = 5;
+    bytes data = 6;
+    int64 createdAt = 7;
+    int64 updatedAt = 8;
+}
+
+message CamReply {
+    string msgId = 1;
+    string replyId = 2;
+    string srcNodeId = 3;
+    string toNodeId = 4;
+    uint32 status = 5;
+    string desc = 6;
+    int64 createdAt = 7;
+    int64 updatedAt = 8;
+}
+
+message RteDistribution {
+    string msgId = 1;
+    string srcNodeId = 2;
+    string toNodeId = 3;
+    int32 msgType = 4;
+    uint32 length = 5;
+    bytes data = 6;
+    int64 updatedAt = 7;
+}
+
+message RteDistributionReply {
+    string msgId = 1;
+    string srcNodeId = 2;
+    string toNodeId = 3;
+    uint32 status = 4;
+    string desc = 5;
+    int64 updatedAt = 6;
+}
+
+message RtsDistribution {
+    string msgId = 1;
+    string srcNodeId = 2;
+    string toNodeId = 3;
+    int32 msgType = 4;
+    uint32 length = 5;
+    bytes data = 6;
+    int64 updatedAt = 7;
+}
+
+message RtsDistributionReply {
+    string msgId = 1;
+    string srcNodeId = 2;
+    string toNodeId = 3;
+    uint32 status = 4;
+    string desc = 5;
+    int64 updatedAt = 6;
+}
+
+message Objects {
+    int32 ptcId = 1;
+    int32 lat = 2;
+    int32 lon = 3;
+    int32 ele = 4;
+    int32 speed = 5;
+    int32 heading = 6;
+    int64 timestamp = 7;
+    string deviceIdList = 8;
+    int32 ptcType = 9;
+    int32 vehType = 10;
+    int32 dataSource = 11;
+    int32 width = 12;
+    int32 length = 13;
+    int32 height = 14;
+}
+
+message ObjectList {
+    repeated Objects items = 1;
+}
+
+message SimplifiedCam {
+    string msgId = 1;
+    string srcNodeId = 2;
+    string toNodeId = 3;
+    uint32 length = 4;
+    ObjectList data = 5;
+    int64 updatedAt = 6;
+}
+
+message SimplifiedCamReply {
+    string msgId = 1;
+    string srcNodeId = 2;
+    string toNodeId = 3;
+    uint32 status = 4;
+    string desc = 5;
+    int64 updatedAt = 6;
+}

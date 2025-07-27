@@ -1,0 +1,40 @@
+{
+  "database_schema": {
+    "tables": [
+      {
+        "name": "sensor_table",
+        "structure": [
+          {"type": "primary_key", "data_type": "int", "name": "id"},
+          {"type": "regular_field", "data_type": "double", "name": "temperature"},
+          {"type": "regular_field", "data_type": "double", "name": "humidity"},
+          {"type": "regular_field", "data_type": "int", "name": "timestamp"},
+          {"type": "regular_field", "data_type": "int", "name": "synced"}
+        ],
+        "nested_tables": [
+          {
+            "name": "nested_data",
+            "structure": [
+              {"type": "primary_key", "data_type": "int", "name": "id"},
+              {"type": "regular_field", "data_type": "varchar", "length": 80, "name": "nested_value"},
+              {"type": "foreign_key", "data_type": "int", "reference_table": "sensor_table", "name": "sensor_id"}
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "operations": ["insert", "delete", "select", "update"],
+  "connection_info": {
+    "host": "10.4.1.151",
+    "user": "root",
+    "password": "Seisys*77889900",
+    "database": "databus-dev",
+    "port": 4000,
+    "pool_size": 10,
+    "pool_timeout": 30
+  },
+  "operation_config": {
+    "batch_size": 100,
+    "table_name": "sensor_table"
+  }
+}

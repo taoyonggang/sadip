@@ -1,0 +1,328 @@
+﻿module cn{
+  module seisys {
+    module dds {
+
+        typedef sequence<octet> OctetSeq;
+        
+        enum ArchType {
+	     ARCHTYPEUNKNOWN,
+             AMD64,
+             X86,
+             ARM64V8
+        };
+
+
+        enum OSType {
+            OSTYPENOWN,
+            WINDOWA,
+            LINUX
+        };
+		
+        enum CmdType {
+		    CMDTYPEUNKNOWN,
+			REBOOT,    
+			RESTART,   
+			LS,              
+			MKDIR,          
+			DEL,           
+			DELDIR,         
+			SENDFILE,   
+			ADDAPP,     
+			REMOVEAPP,  
+			STARTAPP,     
+			STOPAPP,    
+			RESTARTAPP,  
+			LSAPP,          
+			ADDPLUGIN,     
+			REMOVEPLUGIN,    
+			STARTPLUGIN,   
+			STOPPLUGIN,     
+			RESTARTPLUGIN,      
+			LSPLUGIN,      
+			GETS3FILE,       
+			PUTS3FILE,       
+			LSS3DIR,         
+			LSS3BUCKETS,      
+			COPYS3FILE,         
+			DELS3FILE,          
+			ZIP,              
+			DZIP,              
+			ADDS3WATCH,             
+			RMS3WATCH,             
+			LSS3WATCH,             
+			STARTTRACELOG,         
+			STOPTRACELOG,          
+			LSTRACELOG,              
+			STARTEXEC,               
+			STOPEXEC,
+			LSEXEC,
+			RMEXEC,                  
+			GETEXECRESULT,
+            MKFILE,
+            CPFILE,
+            PODMANCMD
+        };
+		
+
+        enum NodeState {
+		    NodeState_UNKNOWN,
+            online,
+            offline,
+            overload
+        };
+		
+		enum PodmanCmd {
+           listContainers,
+           createContainer,
+           startContainer,
+           stopContainer,
+           removeContainer,
+           inspectContainer,
+           restartContainer,
+           pauseContainer,
+           unpauseContainer,
+           execInContainer,
+
+           listImages,
+           pullImage,
+           removeImage,
+           inspectImage,
+           tagImage,
+
+           listNetworks,
+           createNetwork,
+           removeNetwork,
+           inspectNetwork,
+
+           listVolumes,
+           createVolume,
+           removeVolume,
+           inspectVolume,
+
+           listStacks,
+           deployStack,
+           removeStack,
+           inspectStack,
+           updateStack,
+           startStack,
+           stopStack,
+           restartStack,
+           pauseStack,
+           unpauseStack,
+           scaleStack,
+           getStackLogs,
+
+           listRegistries,
+           addRegistry,
+           removeRegistry,
+           loginRegistry
+		};
+		
+		enum CommStatus{
+			STATUS_UNKNOWN,
+			DOING,
+			SUCCESS,
+			INVALID,
+			OTHER
+		};
+
+        struct File {
+            string filePathName;   
+            boolean isDir;
+			long long fileSize;  
+			long long timestamp; 
+        };
+
+        typedef sequence<File> FileInfos;
+
+
+        struct Ping{
+			string toNodeId;   
+			string srcNodeId;  
+			string nodeAppVer;   
+			string nodeCfgVer;   
+			NodeState state;    
+			long long createdAt;  
+			string desc;       
+        };
+		
+		
+		
+		struct Cpu{
+			string vendor;
+			string model;
+            long physicalCores;
+			long logicalCores;
+			long long maxFrequency;
+			long long regularFrequency;
+			long long minFrequency;
+			sequence<long long> currentFrequency;
+			long long cacheSize;
+			double CPUUsage;		
+		};
+		
+		typedef sequence<Cpu> CpuSeq;
+		
+		struct Gpu{
+		    string vendor;
+			string model;
+			string driverVersion;
+			double memory;
+			long long frequency;		
+		};
+		
+		typedef sequence<Gpu> GpuSeq;
+		
+		struct Ram{
+			string vendor;
+			string model;
+			string name;
+			string serialNumber;
+            long long size;
+			long long free;
+			long long available;
+		};
+		
+		
+		
+		struct Disk{
+			string vendor;
+			string model;
+			string serialNumber;
+			long long size;		
+		};
+		typedef sequence<Disk> DiskSeq;
+		
+		struct MainBoard{
+			string vendor;
+			string name;
+			string version;
+			string serialNumber;
+		};
+		
+		struct ProcessTime{
+		    float userTime;
+            float kernelTime;
+		    float childrenUsertime;
+		    float childrenKernelTime;
+		};
+		
+		struct Process{
+			string name;
+			string workPath;
+			long pid;
+			string args;
+			double cpuUsage;
+			double memUsage;
+			long long start_time;
+			long long stop_time;
+			long reboot_count;
+			long priority;
+			map<string,string> env;
+		};
+		typedef sequence<Process> ProcessSeq;
+		
+		struct Network{
+			string name;
+			string ipv4s;
+			string ipv6s;
+			long long broadband;
+			long long broadbandUsing;
+		};
+		typedef sequence<Network> NetworkSeq;
+
+		
+		struct OSInfo{
+			string operatingSystem;
+			string shortName;
+			string version;
+			string kernel;
+			string architecture;
+			string endianess;	
+		};
+		
+		struct MachineState{
+            		 string toNodeId;   
+			 string srcNodeId;  
+			CpuSeq cpus;
+			GpuSeq gpus;
+			Ram rams;
+			DiskSeq disks;
+			NetworkSeq networks;
+			MainBoard mainBoardInfos;
+			OSInfo osInfos;
+			ProcessSeq processes;
+        };
+
+        
+        struct Node {
+			string uuid;  
+			string toNodeId;   
+			string toNodeName;  
+			string srcNodeId;  
+			string toGroup;   
+			ArchType arch;  
+			OSType os;      
+			string uri;     
+			string toConfigPath; 
+			string srcConfigPath; 
+			unsigned long domain; 
+			OctetSeq config;      
+			string configHash;    
+            unsigned long configSize;
+            NodeState state;
+			long long createdAt; 
+			long long updatedAt;  
+        };
+
+        
+        struct NodeReply {
+			string uuid;  
+			string toNodeId;  
+			string toNodeName;   
+			string srcNodeId;  
+			string toGroup;     
+			string replyUuid;  
+			CommStatus status;
+			string desc;
+			string descStr;    
+			long long createdAt;  
+			long long updatedAt;  
+        };
+
+        struct NodeCmd {
+			string uuid;  
+			string srcNodeId; 
+			string srcNodeName;  
+			string toNodeId; 
+			string toGroup;  
+			CmdType cmdType;
+			PodmanCmd podmanCmd;			
+			string cmd;            
+			string paras;
+			string paras_1;
+			string paras_2;
+			long long createdAt; 
+			long long updatedAt; 
+        };
+
+		
+		struct NodeCmdReply {
+			string uuid;        
+			string srcNodeId;         
+			string srcNodeName;     
+			string toNodeId;
+			string toNodeName;     
+			string cmdReplyUuid;  
+			CmdType cmdType;
+			CommStatus status;
+			string desc;
+			string descStr;
+			FileInfos result;  
+			long long createdAt;  
+			long long updatedAt;  
+        };
+
+	};
+  };
+};

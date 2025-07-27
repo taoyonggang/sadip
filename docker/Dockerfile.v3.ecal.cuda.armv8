@@ -1,0 +1,12 @@
+FROM harbor.bigdata.seisys.cn:8443/v2x/sadip_cuda_armv8:v0.0.5
+
+RUN apt install uuid-dev software-properties-common -y
+RUN add-apt-repository -y ppa:ecal/ecal-5.9
+RUN apt install ecal -y
+
+RUN apt-get autoclean -y && apt-get clean -y && apt-get autoremove -y
+
+RUN ln -s  /usr/bin/ecal_rec ecal_rec 
+
+CMD ["/bin/bash","run.sh"]
+

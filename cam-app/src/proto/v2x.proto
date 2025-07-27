@@ -1,0 +1,1879 @@
+syntax = "proto3";
+option java_multiple_files = true;
+option java_package = "cn.seisys.v2x.protocol";
+package cn.seisys.v2x.pb;
+
+enum Message_Type {
+    UKNOWN_MSG = 0;
+    OBJECT_MSG = 1;
+    EVENT_MSG = 2;
+    OBSTACLE_MSG = 3;
+    STATUS_MSG = 4;
+    RTE_MSG = 5;
+    RTS_MSG = 6;
+    SPAT_MSG = 7;
+    MAP_MSG = 8;
+    VIR_MSG = 9;
+    RSC_MSG = 10;
+    CAM_MSG = 11;
+    DENM_MSG = 12;
+}
+
+//数据来源  
+enum DataSource{
+    DATA_SOURCE_UNKNOWN = 0; // 未知数据源类型;
+    SELFINFO = 1; // RSU 自身信息;
+    V2X = 2; // 来源于参与者自身的V2X广播消息;
+    VIDEO = 3; // 来源于视频传感器;
+    MICROWAVE_RADAR = 4; // 来源于微波雷达传感器;
+    LOOP = 5; // 来源于地磁线圈传感器;
+    LIDAR = 6; // 来源于激光雷达传感器;
+    INTEGRATED = 7; // 2 类或以上感知数据的融合结果;
+    DATA_SOURCE_RESERVE = 8; // 保留
+    CLOUD_FORWARDING = 9;    //云端转发
+    MEC_TO_MEC = 10; //路侧自动转发
+    CLOUD_TO_CLOUD = 11; //云端自动转发
+    CLOUD_MANUAL = 12; //云端人工下发
+}
+
+//时间精度      
+enum TimeConfidence{
+    UNAVAILABLE = 0; // 未配备或不可用
+    TIME_100_000 = 1; // 优于100 SECONDS
+    TIME_050_000 = 2; // 优于50 SECONDS
+    TIME_020_000 = 3; // 优于20 SECONDS
+    TIME_010_000 = 4; // 优于10 SECONDS
+    TIME_002_000 = 5; // 优于2 SECONDS
+    TIME_001_000 = 6; // 优于1 SECOND
+    TIME_000_500 = 7; // 优于0.5 SECONDS
+    TIME_000_200 = 8; // 优于0.2 SECONDS
+    TIME_000_100 = 9; // 优于0.1 SECONDS
+    TIME_000_050 = 10; // 优于0.05 SECONDS
+    TIME_000_020 = 11; // 优于0.02 SECONDS
+    TIME_000_010 = 12; // 优于0.01 SECONDS
+    TIME_000_005 = 13; // 优于0.005 SECONDS
+    TIME_000_002 = 14; // 优于0.002 SECONDS
+    TIME_000_001 = 15; // 优于0.001 SECONDS
+    TIME_000_000_5 = 16; // 优于0.000,5 SECONDS
+    TIME_000_000_2 = 17; // 优于0.000,2 SECONDS
+    TIME_000_000_1 = 18; //优于0.000,1 SECONDS
+    TIME_000_000_05 = 19; //优于0.000,05 SECONDS
+    TIME_000_000_02 = 20; // 优于0.000,02 SECONDS
+    TIME_000_000_01 = 21; // 优于0.000,01 SECONDS
+    TIME_000_000_005 = 22; // 优于0.000,005 SECONDS
+    TIME_000_000_002 = 23; // 优于0.000,002 SECONDS
+    TIME_000_000_001 = 24; // 优于0.000,001 SECONDS
+    TIME_000_000_000_5 = 25; // 优于0.000,000,5 SECONDS
+    TIME_000_000_000_2 = 26; // 优于0.000,000,2 SECONDS
+    TIME_000_000_000_1 = 27; // 优于0.000,000,1 SECONDS
+    TIME_000_000_000_05 = 28; // 优于0.000,000,05 SECONDS
+    TIME_000_000_000_02 = 29; // 优于0.000,000,02 SECONDS
+    TIME_000_000_000_01 = 30; //优于0.000,000,01 SECONDS
+    TIME_000_000_000_005 = 31; // 优于0.000,000,005 SECONDS
+    TIME_000_000_000_002 = 32; // 优于0.000,000,002 SECONDS
+    TIME_000_000_000_001 = 33; // 优于0.000,000,001 SECONDS
+    TIME_000_000_000_000_5 = 34; // 优于0.000,000,000,5 SECONDS
+    TIME_000_000_000_000_2 = 35; //优于0.000,000,000,2 SECONDS
+    TIME_000_000_000_000_1 = 36; // 优于0.000,000,000,1 SECONDS
+    TIME_000_000_000_000_05 = 37; // 优于0.000,000,000,05 SECONDS
+    TIME_000_000_000_000_02 = 38; // 优于0.000,000,000,02 SECONDS
+    TIME_000_000_000_000_01 = 39; // 优于0.000,000,000,01 SECONDS
+}
+
+//起终时间   
+message RsiTimeDetails{
+    uint64 startTime = 1; // 开始时间
+    uint64 endTime = 2; // 结束时间
+    TimeConfidence endTimeConfidence = 3; //
+}
+
+//位置   
+message Position3D{
+    int32 lat = 1;  //定义纬度数值，北纬为正，南纬为负。取值范围_900000000到900000001，分辨率1e_7°，数值900000001 表示未知或无效。
+    int32 lon = 2;  //定义经度数值。东经为正，西经为负。分辨率为1e_7°， 取值范围_1799999999到1800000001，数值1800000001表示未知或无效。
+    int32 ele = 3;  //定义车辆海拔高程。分辨率为0.1米，取值范围_4096到61439，数值_4096表示无效数值。
+}
+
+//位置精度  
+message PositionConfidenceSet{
+    enum PositionConfidence{
+        UNAVAILABLE_POS_CONFID = 0; // 不可用,  B0000 未配备或不可用
+        POS_CONFID_500M = 1; // 大约 5*10^_3度
+        POS_CONFID_200M = 2; // 大约 2*10^_3度
+        POS_CONFID_100M = 3; // 大约 1*10^_3度
+        POS_CONFID_50M = 4; // 大约 5*10^_4度
+        POS_CONFID_20M = 5; // 大约 2*10^_4度
+        POS_CONFID_10M = 6; // 约1*10^_4度
+        POS_CONFID_5M = 7; // 大约 5*10^_5度
+        POS_CONFID_2M = 8; // 大约 2*105度
+        POS_CONFID_1M = 9; // 大约 1*10^_5度
+        POS_CONFID_50CM = 10; // 大约 5*10^_6度
+        POS_CONFID_20CM = 11; // 大约 2*10^_6度
+        POS_CONFID_10CM = 12; // 大约 1*10^_6度
+        POS_CONFID_5CM = 13; // 大约 5*10^_7度
+        POS_CONFID_2CM = 14; // 大约 2*10^_7 度
+        POS_CONFID_1CM = 15; // 大约 1*10^_7度
+    };
+    // 纵向坐标精度  数值描述了95%置信水平的车辆高程精度，该精度理论上只考虑了当前高程传感器的误差，但是，当系统能够自动检测错误并修正，相应的精度数值也应该提高。
+    enum ElevationConfidence{
+        UNAVAILABLE_ELE_CONFID = 0; // 未配备或不可用
+        ELE_CONFID_500M = 1; //500米
+        ELE_CONFID_200M = 2; //200米
+        ELE_CONFID_100M = 3; //100米
+        ELE_CONFID_50M = 4; //50米
+        ELE_CONFID_20M = 5; //20米
+        ELE_CONFID_10M = 6; //10米
+        ELE_CONFID_5M = 7; //5米
+        ELE_CONFID_2M = 8; //2米
+        ELE_CONFID_1M = 9; //1米
+        ELE_CONFID_50CM = 10; //50厘米
+        ELE_CONFID_20CM = 11; //20厘米
+        ELE_CONFID_10CM = 12; //10厘米
+        ELE_CONFID_5CM = 13; //5厘米
+        ELE_CONFID_2CM = 14; //2厘米
+        ELE_CONFID_1CM = 15; //1厘米
+    };
+    PositionConfidence posConfid = 1; // 可选，平面坐标精度
+    ElevationConfidence eleConfid = 2; // 可选，纵向坐标精度
+}
+
+//物体类型 
+enum ParticipantType {
+    OBJECTTYPE_UNKNOWN = 0; //未知
+    OBJECTTYPE_MOTOR = 1;   //机动车
+    OBJECTTYPE_NON_MOTOR = 2;   //非机动车
+    OBJECTTYPE_PEDESTRIAN = 3;  //行人
+    OBJECTTYPE_RSU = 4;     //自身
+}
+
+//物体尺寸  
+message ParticipantSize{
+    uint32 width = 1; // 宽度。分辨率为1cm。数值0表示无效数据。
+    uint32 length = 2; // 长度。分辨率为1cm。数值0表示无效数据。
+    uint32 height = 3; // 可选，高度。分辨率为5cm。数值0表示无效数据。
+}
+
+// 物体尺寸精度 
+message ParticipantSizeConfidence{
+    enum SizeValueConfidence{
+        SIZE_CONFID_UNAVAILABLE=0;
+        SIZE_CONFID_100_00=1; // (100 M)
+        SIZE_CONFID_050_00=2; // (50 M)
+        SIZE_CONFID_020_00=3; // (20 M)
+        SIZE_CONFID_010_00=4; // (10 M)
+        SIZE_CONFID_005_00=5; // (5 M)
+        SIZE_CONFID_002_00=6; // (2 M)
+        SIZE_CONFID_001_00=7; // (1 M)
+        SIZE_CONFID_000_50=8; // (50 CM)
+        SIZE_CONFID_000_20=9; // (20 CM)
+        SIZE_CONFID_000_10=10; // (10 CM)
+        SIZE_CONFID_000_05=11; // (5 CM)
+        SIZE_CONFID_000_02=12; // (2 CM)
+        SIZE_CONFID_000_01=13; //(1 CM)
+    };
+    SizeValueConfidence widthConfid = 1; // 物体宽度置信度。
+    SizeValueConfidence lengthConfid = 2; // 物体长度置信度。取值同上。
+    SizeValueConfidence heightConfid = 3; // 可选，物体高度置信度。取值同上。
+}
+
+//车道编号  (统一为int32)
+// message LaneId{
+//     int32 laneId = 1; //分配的车道ID
+// }
+
+//影响区域点集合  
+message Polygon{
+    repeated Position3D pos = 1; //一组三维相对位置的定点组成的多边形区域，至少有4个点
+}
+
+//交通流感知区间  
+message DetectorArea{
+    int32 areaId = 1; //交通流感知区间ID
+    int64 setTime = 2; //可选，UNIXTIME 时间戳 单位到秒 设置更新时间
+    Polygon polygon = 3; //一组三维相对位置的定点组成的多边形区域，至少有4个点
+    NodeReferenceId nodeId = 4; //本路口id，与TrafficFlow中nodeId相同
+    int32 laneId = 5; //可选，LaneId道对象定义车道，定义来自Lane对象
+}
+
+//速度  数值描述了95%置信水平的速度精度。该精度理论上只考虑了当前速度传感器的误差。但是，当系统能够自动检测错误并修正，相应的精度数值也成该提高。
+enum SpeedConfidence{
+    SPEED_CONFID_UNAVAILABLE = 0; // __未配备或不可用
+    SPEED_CONFID_100MS = 1; // __100 METERS/SEC
+    SPEED_CONFID_10MS = 2;  // __10 METERS/SEE
+    SPEED_CONFID_5MS = 3; // __5 METERS/SEC
+    SPEED_CONFID_1MS = 4; // __1 METERS/SEC
+    SPEED_CONFID_0_1MS = 5;  // __ 0.1 METERS/SEC
+    SPEED_CONFID_0_05MS = 6; // __0.05 METERS/SEC
+    SPEED_CONFID_0_01MS = 7;  // __0.01 METERS/SEC
+}
+
+//限速   
+message RegulatorySpeedLimit{
+    enum SpeedLimitType{
+        SPEED_LIMIT_UNKNOWN = 0; //不可用
+        MAX_SPEED_IN_SCHOOL_ZONE = 1; //仅在限制有效时发送
+        MAX_SPEED_INSCHOOL_ZONE_WHEN_CHILDREN_ARE_PRESENT = 2; //校车随时发车
+        MAX_SPEED_INCONSTRUCTION_ZONE = 3; //用于工作区、事故区等
+        VEHICLE_MIN_SPEED = 4; //车辆最小速度
+        VEHICLE_SPEED = 5; //一般交通的监管限速
+        VEHICLE_NIGHT_MAX_SPEED = 6; //车辆夜间最大速度
+        TRUCK_MIN_SPEED = 7; //卡车最小速度
+        TRUCK_MAX_SPEED = 8; //卡车最大速度
+        TRUCK_NIGHT_MAX_SPEED = 9; //卡车夜间最大速度
+        VEHICLES_WITH_TRAILERS_MIN_SPEED = 10;    //拖车最小速度
+        VEHICLES_WITH_TRAILERS_MAX_SPEED = 11;    //拖车最大速度
+        VEHICLES_WITHTRAILERS_NIGHT_MAX_SPEED = 12;   //拖车夜间最大速度
+    };
+    SpeedLimitType speedLimitType = 1;    //遵循的监管速度类型
+    int32 speed = 2;    //分辨率为0.02 m/s。数值8191表示无效数值。
+}
+
+//加速度   
+message AccelerationSet4Way{
+    int32 lat = 1; // 可选，定义车辆纵向加速度。分辨率为0.01m/s^2，向前加速为正，反向为负。
+    int32 lon = 2; // 可选，定义车辆横向加速度。分辨率为0.01m/s^2，向前加速为正，反向为负。
+    int32 vert = 3; // 可选，定义Z轴方向的加速度大小，Z轴方向竖直向下，沿着Z 轴方向为正。分辨率为0.02g，g为重力加速度典型值 9.80665m/s2。沿重力方向向下为正，反向为负
+    int32 yaw = 4; // 可选，车辆摆角速度，辨率单位为0.01°/s。顺时针旋转为正，反向为负
+}
+
+//加速度精度 
+message AccelerationConfidence{
+    enum AccConfidence {
+        ACC_CONFID_UNAVAILABLE = 0; // __ Not Equipped or unavailable
+        ACC_CONFID_PREC100DE = 1; // 100 m/s2
+        ACC_CONFID_PREC10DEG = 2; // 10 m/s2
+        ACC_CONFID_PREC5DEG = 3; // 5 m/s2
+        ACC_CONFID_PREC1DEG = 4; // 1 m/s2
+        ACC_CONFID_PREC0_1DEG = 5; // 0.1 m/s2
+        ACC_CONFID_PREC0_05DEG = 6; // 0.05 m/s2
+        ACC_CONFID_PREC0_01DEG = 7; //  0.01m/s2
+    };
+    AccConfidence  lonAccelConfid = 1; // 定义车辆横向加速度精度。
+    AccConfidence  latAccelConfid = 2; // 定义车辆纵向加速度精度。取值同上
+    AccConfidence  verticalAccelConfid = 3; // 定义Z轴方向的加速度精度。取值同上
+    enum AngularVConfidence{
+        ANGULARV_CONFID_UNAVAILABLE = 0;//NOT EQUIPPED OR UNAVAILABLE
+        ANGULARV_CONFID_PREC100DEG = 1;//100 DEGREE/SEC
+        ANGULARV_CONFID_PREC10DEG = 2;//10 DEGREE/SEC
+        ANGULARV_CONFID_PREC5DEG = 3;//5 DEGREE/SEC
+        ANGULARV_CONFID_PREC1DEG = 4;//1 DEGREE/SEC
+        ANGULARV_CONFID_PREC0_1DEG = 5;// 0.1 DEGREE/SEC
+        ANGULARV_CONFID_PREC0_05DEG = 6;// 0.05 DEGREE/SEC
+        ANGULARV_CONFID_PREC0_01DEG = 7;// 0.01 DEGREE/SEC
+    };
+    AngularVConfidence yawRateConfid = 4; // 车辆摆角速度精度
+}
+
+//方向  
+enum HeadingConfidence{
+    HEADING_CONFID_UNAVAILABLE= 0;
+    HEADING_CONFID_PREC10DEG= 1;
+    HEADING_CONFIDE_PREC05DEG= 2;
+    HEADING_CONFIDE_PREC01DEG= 3;
+    HEADING_CONFID_PREC_1DEG= 4;
+    HEADING_CONFID_PREC0_05DEG= 5;
+    HEADING_CONFID_PREC0_01DEG= 6;
+    HEADING_CONFID_PREC0_0125DEG= 7;
+}
+
+//车辆运动运动状态精度  
+message MotionConfidenceSet{
+    // enum SpeedConfidence{
+    //     SPEED_CONFID_UNAVAILABLE = 0; // __未配备或不可用
+    //     SPEED_CONFID_100MS = 1; // __100 METERS/SEC
+    //     SPEED_CONFID_10MS = 2;  // __10 METERS/SEE
+    //     SPEED_CONFID_5MS = 3; // __5 METERS/SEC
+    //     SPEED_CONFID_1MS = 4; // __1 METERS/SEC
+    //     SPEED_CONFID_0_1MS = 5;  // __ 0.1 METERS/SEC
+    //     SPEED_CONFID_0_05MS = 6; // __0.05 METERS/SEC
+    //     SPEED_CONFID_0_01MS = 7;  // __0.01 METERS/SEC
+    // };
+    SpeedConfidence speedCfd = 1;   //可选，车速精度
+    // enum HeadingConfidence{
+    //     HEADING_CONFID_UNAVAILABLE= 0;
+    //     HEADING_CONFID_PREC10DEG= 1;
+    //     HEADING_CONFIDE_PREC05DEG= 2;
+    //     HEADING_CONFIDE_PREC01DEG= 3;
+    //     HEADING_CONFID_PREC_1DEG= 4;
+    //     HEADING_CONFID_PREC0_05DEG= 5;
+    //     HEADING_CONFID_PREC0_01DEG= 6;
+    //     HEADING_CONFID_PREC0_0125DEG= 7;
+    // };
+    HeadingConfidence headingCfd = 2;   //可选，航向精度
+    enum SteeringWheelAngleConfidence{
+    STEERING_WHEEL_ANGLE_CONFID_UNAVAILABLE = 0;
+    STEERING_WHEEL_ANGLE_CONFID_PREC2DEG = 1; //2度
+    STEERING_WHEEL_ANGLE_CONFID_PREC1DEG = 2; //1度
+    STEERING_WHEEL_ANGLE_CONFID_PREC0_02DEG = 3; //0.02度
+    };
+    SteeringWheelAngleConfidence steerCfd = 3;  //可选，方向盘转角精度
+}
+
+//车辆相关
+
+//车辆尺寸     
+message VehicleSize{
+    int32 width = 1; // 车辆车身宽度。分辨率为1cm。数值0表示无效数据。10m以内
+    int32 length = 2; // 车辆车身长度。分辨率为1cm。数值0表示无效数据。40m以内
+    int32 height = 3; // 车辆车身高度。分辨率为5cm。数值0表示无效数据
+}
+
+//车辆类型信息     
+enum VehicleType{
+    UNKNOWN_VEHICLE_CLASS= 0; // 未配备、未知或不可用
+    PASSENGER_VEHICLE_TYPE_UNKNOWN= 10; //乘用车辆默认类型
+    MOTOR_LIGHTTRUNK = 20; //小型卡 车、皮卡、面包车
+    TRUCK_VEHICLE_TYPE_UNKNOWN= 25;// 大卡车、货车默认类型
+    MOTORCYCLE_TYPE_UNKNOWN = 40;// 摩托车默认类型
+    TRANSIT_TYPE_UNKNOWN= 50;//公交、短驳、换乘的默认类型
+    EMERGENCY_TYPE_UNKNOWN = 60; //消防、救护、警车等特种车辆
+    //------------细化分类如下所示--------------------------------------
+    //UNKNOWN_VEHICLE_CLASS= 0; // 未配备、未知或不可用
+    SPECIAL_VEHICLE_CLASS= 1;// 特殊车辆等级
+    //------------基本乘用车类型----------------------------------------
+    //PASSENGER_VEHICLE_TYPE_UNKNOWN= 10; //乘用车辆默认类型
+    PASSENGER_VEHICLE_TYPE_OTHER= 11; //乘用车类型其他
+    //------------轻型卡车、皮卡、厢式货车、面板---------------------------
+    //LIGHT_TRUCK_VEHICLE_TYPE_UNKNOWN= 20;// 轻型卡车车辆默认类型
+    LIGHT_TRUCK_VEHICLE_TYPE_OTHER = 21;// 轻型卡车车辆类型其他
+    //------------卡车，各种车轴类型，包括 HPMS 项目-----------------------
+    //TRUCK_VEHICLE_TYPE_UNKNOWN= 25;// 大卡车、货车默认类型
+    TRUCK_VEHICLE_TYPE_OTHER= 26;// 卡车，其他类型
+    TRUCK_AXLE_CNT2= 27;// 两个轴，六个轮胎单单元
+    TRUCK_AXLE_CNT3= 28;// 三轴，单单元
+    TRUCK_AXLE_CNT4= 29;// 四个或更多轴，单个单元
+    TRUCK_AXLE_CNT4_TRAILER= 30;// 四轴或更少轴，单拖车
+    TRUCK_AXLE_CNT5_TRAILER= 31;// 五个或更少轴，单拖车
+    TRUCK_AXLE_CNT6_TRAILER= 32;// 六轴或更多轴，单拖车
+    TRUCK_AXLECNT5MULTITRAILER= 33;// 五个或更少的轴，多拖车
+    TRUCK_AXLE_CNT6_MULTI_TRAILER= 34;// 六轴，多拖车
+    TRUCK_AXLE_CNT7_MULTI_TRAILER= 35;// 七个或更多轴，多拖车
+    //------------摩托车类型--------------------------------------------
+    //MOTORCYCLE_TYPE_UNKNOWN = 40;// 摩托车默认类型
+    MOTORCYCLE_TYPE_OTHER= 41;// 摩托车类型其他
+    MOTORCYCLE_CRUISER_STANDARD= 42;// 摩托车巡洋舰标准
+    SPORT_UNCLAD_MOTORCYCLE_SPORT_UNCLAD= 43;// 摩托车
+    MOTORCYCLE_SPORT_TOURING= 44;// 摩托车运动旅行
+    MOTORCYCLE_SUPER_SPORT= 45;// 摩托车超级运动
+    MOTORCYCLE_TOURING= 46;// 摩托车旅行
+    MOTORCYCLE_TRIKE = 47;// 摩托车三轮车
+    MOTORCYCLE_WPASSENGERS= 48;// 摩托车带乘客
+    //------------运输类型----------------------------------------------
+    //TRANSIT_TYPE_UNKNOWN= 50;//公交、短驳、换乘的默认类型
+    TRANSIT_TYPE_OTHER= 51;//过境类型其他
+    TRANSIT_BRT= 52;// 公交 BRT
+    TRANSIT_EXPRESS_BUS= 53;// 中转高速巴士
+    TRANSIT_LOCAL_BUS= 54;// 中转本地巴士
+    TRANSIT_SCHOOL_BUS= 55;// 过境校车
+    TRANSIT_FIXED_GUIdEWAY= 56;// 过境固定导轨
+    TRANSIT_PARATRANSIT= 57;// 运输_辅助运输
+    TRANSIT_PARATRANSIT_AMBULANCE= 58;// 运输辅助运输救护车
+    //------------紧急车辆类型-------------------------------------------
+    //EMERGENCY_TYPE_UNKNOWN= 60;// 消防、救护、警车等特种车辆
+    EMERGENCY_TYPE_OTHER= 61;// 其他紧急车辆类型
+    EMERGENCY_FIRE_LIGHT_VEHICLE= 62;// 应急消防轻型车
+    EMERGENCY_FIRE_HEAVY_VEHICLE= 63;// 紧急消防重型车辆
+    EMERGENCY_FIRE_PARAMEDIC_VEHICLE= 64;// 运送急救人员到病患所在地的紧急消防救护车辆
+    EMERGENCY_FIRE_AMBULANCE_VEHICLE= 65;// 转移病人到医院的紧急消防救护车
+    EMERGENCY_POLICE_LIGHT_VEHICLE= 66;// 紧急警用轻型车辆
+    EMERGENCY_POLICE_HEAVY_VEHICLE= 67;// 紧急警用重型车辆
+    EMERGENCY_OTHER_RESPONDER= 68;// 紧急其他响应者
+    EMERGENCY_OTHER_AMBULANCE= 69;// 紧急其他救护车
+    //------------其他配备 V2X 的旅行者-----------------------------------
+    OTHER_TRAVELER_TYPE_UNKNOWN= 80;// 默认类型
+    OTHER_TRAVELER_TYPE_OTHER= 81;// 其他旅行者类型
+    OTHER_TRAVELER_PEDESTRIAN= 82;// 其他旅行者行人
+    OTHER_TRAVELER_VISUALLY_DISABLED= 83;// 其他视力残疾的旅行者
+    OTHER_TRAVELER_PHYSICALLY_DISABLED = 84;// 其他身体残疾的旅客
+    OTHER_TRAVELER_BICYCLE = 85;// 其他旅行自行车
+    OTHER_TRAVELER_VULNERABLE_ROAD_WORKER= 86;// 其他旅行者易受伤害的道路工人
+    //------------其他配备 V2X 的设备类型----------------------------------
+    INFRASTRUCTURE_TYPE_UNKNOWN= 90;// 基础设施类型未知
+    INFRASTRUCTURE_FIXED= 91;// 基础设施_固定
+    INFRASTRUCTURE_MOVABLE= 92;// 基础设施_可移动
+    EQUIPPED_CARGO_TRAILER = 93;//装备货运拖车
+}
+
+//5.6.5 地图划分区域编号
+/* message RoadRegulatorId{
+    int32 roadRegulatorId = 1; // 值仅用于测试
+}   
+*/
+
+//节点编号NodeReferenceId 
+message NodeReferenceId{
+    uint32 region = 1;  //全局唯一的地区 ID，取经纬度小数点后2位共同为region 编号
+    uint32 nodeId = 2;  //地区内部唯一的节点 ID，取经纬度小数点后 3-4 位共同为 id编号
+}
+
+//地图所在位置  
+message MapLocation{
+    NodeReferenceId nodeId = 1;     //可选，所在交叉路口id
+    string linkName = 2;    //可选，所在路段，由字符串表达的路段名称或者描述
+    NodeReferenceId upstreamNodeId = 3;     //可选，所在路段的上游节点id
+    uint32 sectionId = 4;    //可选，所在的分段路段
+    uint32 laneId = 5;   //可选，LaneId所在的车道
+}
+
+// //路段编号    
+// message SectionId{
+//     int32 sectionId = 1; //分配的路段ID
+// }
+
+//相位编号 PhaseId  
+message PhaseId{
+    uint32 phaseId = 1;  //相位编号
+}
+
+//关联车道    
+message ReferenceLanes{
+    uint32 referenceLanes = 1;    //定义路段中指定的关联车道。
+                                //将指定车道号对应的比特位置1表示该车道为有效的关联车道。
+                                //最多支持15条车道。车道号，以该车道行驶方向为参考，自左向右从1开始编号。
+                                //转化为二进制后，二进制第x位数字为1对应的含义：
+                                //reserved(0), lane1(1), lane2(2), lane3(3), lane4(4), lane5(5), 
+                                //lane6(6), lane7(7), lane8(8), lane9(9), lane10(10), lane11(11),
+                                //lane12(12), lane13(13), lane14(14), lane15(15)
+    
+}
+
+//关联路径    
+message ReferencePath{
+    repeated Position3D activePath = 1;     //影响路径
+    uint32 pathRadius = 2;   //路段半径，单位：0.1m
+}
+
+//关联路段    
+message ReferenceLink{
+    NodeReferenceId upstreamNodeId = 1;   //上游节点ID
+    NodeReferenceId downstreamNodeId = 2; //下LaneStatInfo游节点ID
+    ReferenceLanes referenceLanes = 3;    //可选，定义路段中指定的关联车道
+}
+
+//转向信息  
+message AllowedManeuvers{
+    uint32 maneuvers = 1;//定义一个（机动车）车道的允许转向行为。例如：如果参数含义表示'允许直行'和'允许右转向'，那么二进制为101000000000，对应十进制为40960，该参数值填写40960。
+    //二进制左起第x位数字为1对应的含义：
+    //maneuverStraightAllowed = 1; 允许直行
+    //maneuverLeftAllowed = 2; 允许左转向
+    //maneuverRightAllowed = 3; 允许右转向
+    //maneuverUTurnAllowed = 4; 允许掉头转向
+    //maneuverLeftTurnOnRedAllowed = 5; 红灯情况下允许左转向
+    //maneuverRightTurnOnRedAllowed = 6; 红灯情况下允许右转向
+    //maneuverLaneChangeAllowed = 7; 允许变道
+    //maneuverNoStoppingAllowed = 8; 不允许停车
+    //yieldAllwaysRequired= 9; 非保护车道状态，如永久黄灯状态
+    //goWithHalt = 10; 停车，再前行
+    //caution = 11; 小心前行
+    //reserved1 = 12; 保留数值
+}
+
+
+//车道对象  
+message LaneStatInfo{
+    uint32 laneId = 1; //LaneId车道对象定义车道定义来自Lane对象
+    LinkStatInfo linkStatInfo = 2;  //所属路段link的编号和信息
+    SectionStatInfo sectionStatInfo = 3;    //可选，所属路段区段section的编号
+    string extId = 4;   //可选，拓展ID、保证全局唯一，根据拼接规则定义
+}
+
+//路段区段分段对象  
+message SectionStatInfo{
+    uint32 sectionId = 1; // 路段的区间分段编号 定义来自Section对象
+    LinkStatInfo linkStatInfo = 2;  //所属路段link的编号和信息
+    string extId = 3;   //可选，拓展ID、保证全局唯一，根据拼接规则定义
+}
+
+//有向路段对象  
+message LinkStatInfo{
+    NodeReferenceId upstreamNodeId = 1; // 节点 ID 是由一个全局唯一的地区 ID 和一个地区内部唯一的节点 ID 组成。此 ID 为关联 Link 的上游节点 ID
+    string name = 2; // 由字符串表达的路段名称或者描述
+    NodeStatInfo nodeStatInfo = 3;  //本路口id，与TrafficFlow中nodeId相同
+    string extId = 4;   //可选，拓展ID、保证全局唯一，根据拼接规则定义
+}
+
+//路口对象  
+message NodeStatInfo{
+    NodeReferenceId nodeId = 1;
+}
+
+//转向信息  
+enum Maneuver{
+    MANEUVER_STRAIGHT = 0;    //直走
+    MANEUVER_LEFT_TURN = 1;     //左转
+    MANEUVER_RIGHT_TURN = 2;    //右转
+    MANEUVER_UTURN = 3;     //掉头
+}
+
+//转向对象  
+message MovementStatInfo{
+    NodeReferenceId remoteIntersection = 1; //下游路口编号
+    Maneuver turnDirection = 2; //转向信息 
+    NodeStatInfo nodeStatInfo = 3;  //本路口id，与TrafficFlow中nodeId相同
+    string extId = 4;   //可选，拓展ID、保证全局唯一，根据拼接规则定义
+}
+
+//________________________________________________________________________________
+//交通流综合统计信息
+
+//统计方式信息   
+message TrafficFlowStatByInterval{
+    uint32 interval = 1; //固定时间间隔，单位：sec
+}
+
+// MSG 信号执行顺序 TrafficFlowStatBySignalCycle   
+message TrafficFlowStatBySignalCycle{
+    uint64 cycleStartTime = 1;   //周期开始时间，Unix time，秒级时间戳，UTC 时间，单位秒，19700101000到现在的秒，消息时间
+    uint64 cycleEndTime = 2;     //周期结束时间，Unix time，秒级时间戳，UTC 时间，单位秒，19700101000到现在的秒，消息时间
+    uint32 cycleTime = 3;    //周期时长，单位秒
+}
+
+//统计方式信息 TrafficFlowStatType   
+message TrafficFlowStatType{
+    TrafficFlowStatByInterval interval = 1; //可选，按照固定时间间隔进行统计
+    TrafficFlowStatBySignalCycle sequence = 2; //可选，按信号控制周期方式统计
+}
+
+//路网元素绑定TrafficFlowStatMapElement 
+message TrafficFlowStatMapElement{
+    oneof TrafficFlowStatMapElementOneOf{
+        DetectorArea detectorArea = 1; // 检测区对象
+        LaneStatInfo laneStatInfo = 2; //车道对象
+        SectionStatInfo sectionStatInfo = 3; //路段分段对象
+        LinkStatInfo linkStatInfo = 4; //有向路段对象
+        NodeStatInfo nodeStatInfo = 5; // 路口对象
+        MovementStatInfo movementStatInfo = 6;//一条路段与下游路段的连接关系
+    }
+}
+
+//车道级指标  
+message LaneIndexAdded{
+    uint64 timestamp = 1;    //数据时间 Unix timestamp数据时间，UTC 时间，单位毫秒，19700101000到现在的毫秒
+    uint32 laneCapacity = 2; //可选，通行能力，0.01pcu/h
+    uint32 laneSaturation = 3; //可选，平均饱和度，0.01%
+    uint32 laneSpaceOccupy = 4;  //可选，平均车道空间占有率，0.01%
+    uint32 laneTimeOccupy = 5;   //可选，平均车道时间占有率，0.01%
+    uint32 laneAvgGrnQueue = 6;  //可选，绿初车辆平均排队长度，0.01m
+    uint32 laneGrnUtilization = 7;   //可选，时段内平均绿灯利用率，0.01%
+}
+
+//进口道级指标  
+message LinkIndexAdded{
+    uint64 timestamp = 1;    //数据时间 Unix timestamp数据时间，UTC 时间，单位毫秒，19700101000到现在的毫秒
+    uint32 linkCapacity = 2; //可选，进口道通行能力，0.01pcu/h
+    uint32 linkSaturation = 3; //可选，进口道平均饱和度，0.01%
+    uint32 linkSpaceOccupy = 4;  //可选，进口道平均车道空间占有率，0.01%
+    uint32 linkTimeOccupy = 5;   //可选，进口道平均车道时间占有率，0.01%
+    uint32 linkAvgGrnQueue = 6;  //可选，进口道绿初车辆平均排队长度，0.01m
+    uint32 linkGrnUtilization = 7;   //可选，时段内进口道平均绿灯利用率，0.01%
+}
+
+//转向级指标 MovementIndexAdded  
+message MovementIndexAdded{
+    uint64 timestamp = 1; //数据时间
+    uint32 movementCapacity = 2; //可选，转向通行能力，0.01pcu/h。解释同车道通行能力
+    uint32 movementSaturation = 3;   //可选，转向平均饱和度，0.01%
+    uint32 movementSpaceOccupy = 4;  //可选，转向平均车道空间占有率，0.01%
+    uint32 movementTimeOccupy = 5;   //可选，转向平均车道时间占有率，0.01%
+    uint32 movementAvgGrnQueue = 6;  //可选，转向绿初车辆平均排队长度，0.01m
+    uint32 movementGrnUtilization = 7;  //可选，时段内转向平均绿灯利用率，0.01%
+}
+
+//路口级指标  
+message NodeIndexAdded{
+    uint64 timestamp = 1; //数据时间
+    uint32 nodeSpaceOccupy = 2;  //可选，平均车道空间占有率取平均，0.01%
+    uint32 nodeTimeOccupy = 3;   //可选，平均车道时间占有率取平均，0.01%
+    uint64 nodeCapacity = 4; //可选，交叉口通行能力，0.01pcu/h
+    uint32 nodeSaturation = 5; //可选，交叉口平均饱和度，0.01%
+    uint32 nodeGrnUtilization = 6; //可选，时段内交叉口红绿灯利用率，0.01%
+    uint32 nodeAvgGrnQueue = 7;  //可选，交叉口绿初车辆平均排队长度，0.01m
+    uint32 demandIndex = 8;  //可选，路口需求指数，0.01pcu/h。
+    uint32 supplyIndex = 9;  //可选，路口供给指数，0.01pcu/h
+    uint32 theoryIndex = 10; // 可选，路口理论供给指数，0.01pcu/h。
+}
+
+//信号补充元素统计值SignalControlIndexAdded  
+message SignalControlIndexAdded{
+    uint32 phaseId = 1;  //[0,255]，相位编号
+    uint32 greenStartQueue = 2;  //可选，绿灯启亮时的排队长度，单位0.01m
+    uint32 redStartQueue = 3;    //可选，红灯启亮时的二次排队长度，单位0.01m
+    uint32 greenUtilization = 4; //可选，周期绿灯利用率，0.01%
+}
+
+//扩展交通流指标  
+message TrafficFlowExtension{
+    repeated LaneIndexAdded laneIndex = 1; // 可选，除通用交通指标之外的车道级交通指标;
+    repeated LinkIndexAdded linkIndex = 2; // 可选，除通用交通指标之外的进口道级交通指标;
+    repeated MovementIndexAdded movementIndex = 3;  //可选，除通用交通指标之外的转向级交通指标
+    repeated NodeIndexAdded nodeIndex = 4; // 可选，除通用交通指标之外的车道级路口级交通指标;
+    repeated SignalControlIndexAdded signalIndex = 5;   //可选，交叉口信控评价的可选拓展统计指标
+}
+
+//路网元素类型
+enum MapElementType{
+    MAP_ELEMENT_TYPE_UNKNOWN = 0;       //未知
+    MAP_ELEMENT_TYPE_DETECTOR_AREA = 1;//检测区对象
+    MAP_ELEMENT_TYPE_LANE = 2;      //车道对象
+    MAP_ELEMENT_TYPE_SECTION = 3;   //路段分段对象
+    MAP_ELEMENT_TYPE_LINK = 4;      //有向路段对象
+    MAP_ELEMENT_TYPE_NODE = 5;      //路口对象
+    MAP_ELEMENT_TYPE_MOVEMENT = 6;  //一条路段与下游路段的连接关系
+}
+
+//单路网元素统计值      
+message TrafficFlowStat{
+    TrafficFlowStatMapElement mapElement = 1; // 本组交通流统计值绑定的路网元素
+    MapElementType mapElementType = 2;  //路网元素类型
+    ParticipantType ptcType = 3; // 路侧单元检测到的交通参与者类型。
+    VehicleType vehicleType = 4; // 可选，参考VehicleType（0表示对所有车辆作聚合）
+    uint64 timestamp = 5; //产生消息的最早时间，UTC 时间，单位毫秒，19700101000到现在的毫秒
+    uint32 volume = 6; //流量，0.01 pcu/h,
+    uint32 speedPoint = 7; // 可选，地点速度，0.01m/s
+    uint32 speedArea = 8; // 区域平均速度，0.01m/s
+    uint32 density = 9; // 密度，0.01 pcu/km
+    uint32 travelTime = 10;   //可选，行程时间，单位：0.1s/ vehicle
+    uint32 delay = 11; //  平均延误，0.01 sec/vehicle
+    uint32 queueLength = 12; //可选，排队长度，0.1m
+    uint32 queueInt = 13; //可选，排队车辆数
+    uint32 congestion = 14; // 拥堵指数，%
+    TrafficFlowExtension trafficFlowExtension = 15; //可选，扩展交通流指标，包含扩展的车道、进口道、路口、信号灯的交通流指标
+    uint32 timeHeadway = 16;     //可选，车头时距，单位：0.01s
+    uint32 spaceHeadway = 17;    //可选，车头间距，单位：0.01m
+    uint32 stopNums = 18; //可选，停车次数，次
+}
+
+//交通流综合统计信息     
+message TrafficFlow{
+    NodeReferenceId nodeId = 1; //可选，交叉口ID，非城市道路或不与任何交叉口绑定时可不填，在附加到特定节点时设置
+    uint64 genTime = 2; //可选，消息生成时刻UNIX时间戳（秒级）
+    TrafficFlowStatType statType = 3; // 交通流统计方式信息
+    repeated TrafficFlowStat stats = 4; //可选，交通流元素统计值合集，用于支持同时上报多组绑定到车道、有向路段、路口对象的统计值
+}
+
+//________________________________________________________________________________
+//信号控制信息
+
+//相位倒计时状态TimeCountingDown    
+message TimeCountingDown{
+   uint32 startTime = 1; // [0,36001] 信号灯当前处于该灯色状态，则值为 0，否则为该灯色 状态下一次开始（据离当前）的时间
+   uint32 minEndTime = 2; // 可选，[0,36001]表示当前时刻距离该相位状态下一次结束的最短时间（不管当前时刻该相位状态是否开始）。对于固定周期配时信号灯，minEndTime 应该等于 maxEndTime。
+   uint32 maxEndTime = 3; // 可选，[0,36001] 表示当前时刻距离该相位状态下一次结束的最长时间（不管当前时刻该相位状态是否开始）。
+   uint32 likelyEndTime = 4; // [0,36001] 表示当前时刻距离该相位状态下一次结束的估计时间（不管当前时刻该相位状态是否开始）。
+   TimeConfidence timeConfidence = 5; // 可选，(0,200) 定义置信度。分辨率为0.005。上述 likelyEndTime 预测时间的置信度水平。
+   uint32 nextStartTime = 6; // 可选，[0,36001] 如果当前该相位状态已开始（未结束），则该数值表示当前时刻距离该相位状态下一次开始
+   uint32 nextDuration = 7; // 可选，[0,36001] 如果当前该相位状态已开始（未结束），则该数值表示该相位状态下一次开始后的持续时长;如果当前该相位状态未开始，则表示该相位状态第二次开始后的持续时长。与 nextStartTime 配合
+}
+
+//相位灯态状态PhaseState   
+message PhaseState{
+    enum LightState{
+        LIGHT_STATE_UNKNOWN=0;//未知
+        LIGHT_STATE_DARK=1;//熄灭
+        LIGHT_STATE_FLASHING_RED =2;//红闪
+        LIGHT_STATE_RED=3;//红灯
+        LIGHT_STATE_FLASHING_GREEN =4;//绿闪
+        LIGHT_STATE_PERMISSIVE_GREEN=5;//通行允许相位
+        LIGHT_STATE_PROTETED_GREEN=6;//通行保护相位
+        LIGHT_STATE_YELLOW=7;//黄灯
+        LIGHT_STATE_FLASHING_YELLOW=8;//黄闪
+    };
+    LightState light = 1; //灯色 
+    TimeCountingDown timing = 2; //可选，倒计时配置
+}
+
+//相位状态Phase    
+message Phase {
+    uint32 id = 1; //相位编号
+    repeated PhaseState phaseStates = 2;		// 相位灯态状态列表
+}
+
+//路口状态IntersectionState    
+message IntersectionState {
+    NodeReferenceId intersectionId = 1;	// 路口ID
+    string status = 2; // 可选，表示信号灯当前的控制模式状态，需根据信号控制系统实际的工作状态设置内部数值。
+    uint64 timestamp = 3; //产生消息的最早时间，UTC 时间，单位毫秒，19700101000到现在的毫秒
+    TimeConfidence timeConfidence = 4; //可选，参考TimeConfidence
+    repeated Phase phases = 5;	//多个相位
+}
+
+//信号状态采集SpatData    
+message SpatData{
+    uint32 msgCnt = 1;	 //将 msgCount 初始化为一个随机值，其范围为 0 到 127。
+    uint64 timestamp = 2;    // 产生消息的最早时间，UTC 时间，单位毫秒，19700101000到现在的毫秒
+    repeated IntersectionState intersections = 3;   // 多个路口信号灯的属性和当前状态。
+}
+
+//________________________________________________________________________________
+//信号优化
+
+//信控方案执行时间      
+message LocalTimePoint{
+    int32 hh = 1;   //时
+    int32 mm = 2;   //分
+    int32 ss = 3;   //秒
+}
+
+//时段划分  DateTimeFilter    
+message PeriodictimeSpan{
+    int32 monthFilter = 1;     //包含所有符合条件的月份的集合
+                                //转化为二进制后，二进制左起第x位数字为1对应的含义：
+                                //RESERVED(0), JAN(1), FEB(2), MAR(3), APR(4), 
+                                //MAY(5), JUN(6), JUL(7), AUG(8), SEP(9), OCT(10), NOV(11), DEC(12)
+    int32 dayFilter = 2;    //包含所有符合条件的日期的集合
+                            //转化为二进制后，二进制左起第x位数字为1对应的含义：
+                            //RESERVED(0), 1(1), …, 30(30), 31(31)
+    int32 weekdayFilter = 3;     //包含所有符合条件的星期的集合
+                                //转化为二进制后，二进制左起第x位数字为1对应的含义：
+                                //SUN (0), MON (1), TUE (2), WED (3), THUR (4), FRI (5), SAT (6)
+    LocalTimePoint fromTimePoint = 4;   //信控方案执行当日的开始时刻
+    LocalTimePoint toTimePoint = 5;     //信控方案执行当日的结束时刻
+}
+
+//单次优化时段SingleTimeSpan
+message SingleTimeSpan{
+    uint64 startTime = 1;   //优化时段开始时间
+    uint64 endTime = 2;     //UNIX时间戳（秒级）//
+}
+
+//优化时段类型 
+message OptimTimeType{
+    oneof OptimTimeTypeOneOf{
+            SingleTimeSpan single = 1;  //可选，单次优化时段
+            PeriodictimeSpan periodic = 2;  //可选，周期优化时段划分
+    }
+}
+
+//优化方案对应转向信息MovementEx  
+message MovementEx{
+    NodeReferenceId  remoteIntersection = 1;    //道路与下游路段的连接关系扩展信息
+    uint32 phaseId = 2;  //可选，相位
+    Maneuver turnDirection = 3;    //可选，允许的转弯行为
+}
+
+//优化后相位信息OptimPhase  
+message OptimPhase{
+    uint32 phaseId = 1; // 相位编号
+    uint32 order = 2;    //相序
+    repeated MovementEx movementId = 3; //优化方案对应转向信息
+    uint32 phaseTime = 4; // 相位时间(包括所有的时间）
+    uint32 green = 5;    //绿灯长度 单位sec
+    uint32 phaseYellowTime = 6; // 相位黄灯时间
+    uint32 phaseAllRedTime = 7; // 相位全红时间
+    uint32 minGreen = 8;    //最小时间约束 单位sec
+    uint32 maxGreen = 9;    //最大绿地呢个时间约束 单位sec
+}
+
+//优化时段建议      
+message OptimData{
+    OptimTimeType optimTimeType = 1;    //优化时段类型
+    uint32 optimCycleTime = 2;	// 可选，优化周期长度
+    uint32 minCycleTime = 3;	// 可选，优化最小周期长度约束单位 秒
+    uint32 maxCycleTime = 4;	// 可选，优化最小周期长度约束单位 秒
+    repeated OptimPhase optimPhaseList = 5;	// 可选，优化后相位信息
+    string coorPhase = 6;	// 可选，协调相位编号
+    uint32 offset = 7;  // 可选，协调相位差.
+}
+
+//信号优化SignalScheme    
+message SignalScheme{
+    NodeReferenceId nodeId = 1;    //交叉口ID，非城市道路或不与任何交叉口绑定时可不填，在附加到特定节点时设置
+    uint32 optimType = 2;   //1:实时优化（优化近期时段的方案建议）；2:基于历史数据的优化（全时段的方案建议）；
+    uint64 timestamp = 3;    //产生消息的最早时间，UTC 时间，单位毫秒，19700101000到现在的毫秒
+    repeated OptimData optimDataList = 4; //可选，分时段的优化方案建议
+}
+
+//________________________________________________________________________________
+//基本安全信息BSM
+
+//车辆刹车系统状态 BrakeSystemStatus  
+message BrakeSystemStatus {
+    enum BrakePedalStatus {
+        UNAVAILABLE_PEDAL = 0; // 车辆制动踏板检测器不可用
+        OFF_PEDAL = 1; // 车辆制动踏板未踩下
+        ON_PEDAL = 2;//踩下车辆的制动踏板
+    }
+    BrakePedalStatus brakePadel = 1;// 可选，刹车踏板踩下情况
+    uint32 wheelBrakes = 2; // 可选，车轮制动情况BrakeAppliedStatus，位串，转化为二进制后，二进制第x位数字为1对应的含义：
+                            // 1:LEFT_FRONT; //左前活动;
+                            // 2:LEFT_REAR;  //左后主动;
+                            // 3:RIGHT_FRONT;  //右前活动;
+                            // 4:RIGHT_REAR; //右后主动。
+    enum TractionControlStatus {
+        UNAVAILABLE_TRACTION = 0; //系统未装备或不可用;
+        OFF_TRACTION = 1; //系统处于关闭状态;
+        ON_TRACTION = 2; //系统处于开启状态，但未触发;
+        ENGAGED_TRACTION = 3; //系统被触发，处于作用状态.
+    }                            
+    TractionControlStatus traction = 3; //可选，牵引力控制系统作用情况
+    enum AntiLockBrakeStatus {
+        UNAVAILABLE_ABS = 0; //车辆未配备 ABS 刹车或 ABS 刹车状态不可用;
+        OFF_ABS = 1; //车辆的 ABS关闭;
+        ON_ABS = 2; // 车辆的 ABS开启（但未接合）;
+        ENGAGED_ABS = 3; //车辆的ABS控制在任何车轮上接合.
+    }
+    AntiLockBrakeStatus abs = 4; //可选，制动防抱死系统作用情况
+    enum StabilityControlStatus{
+        UNAVAILABLE_SCS = 0; //系统未装备或不可用;
+        OFF_SCS = 1; //系统处于关闭状态;
+        ON_SCS = 2; //系统处于开启状态，但未触发;
+        ENGAGED_SCS = 3; //系统被触发，处于作用状态.
+    }
+    StabilityControlStatus scs = 5; // 可选，车身稳定控制系统作用情况
+    enum BrakeBoostApplied {
+        UNAVAILABLE_BBA = 0; //车辆未配备制动助力或制动助力数据不可用
+        OFF_BBA = 1; //车辆制动助力关闭
+        ON_BBA = 2; //车辆的制动助力开启（应用）
+    }
+    BrakeBoostApplied brakeBoost = 6; //可选，刹车助力系统作用情况
+    enum AuxiliaryBrakeStatus {
+        UNAVAILABLE_AUX = 0; //车辆未配备辅助制动器或辅助制动器状态不可用;
+        OFF_AUX = 1; //车辆的辅助制动器关闭;
+        ON_AUX = 2; //车辆的辅助制动器开启;
+        ENGAGED_AUX = 3;//保留.
+    }
+    AuxiliaryBrakeStatus auxBrakes = 7; //可选，辅助制动系统（一般指手刹）情况
+    uint32 brakeControl = 8;  //可选，刹车踩踏强度 百分比：0~100%，精度0.1% BrakeControl类型
+}
+
+//定位精度  
+message PositionAccuracy{
+    int32 semiMajor = 1; // 定义用椭圆模型表示的GNSS系统精度中半长轴的大小，单位为0.05米。
+    int32 semiMinor = 2; // 定义用椭圆模型表示的GNSS系统精度中半短轴的大小，单位为0.05米。
+    int32 orientation = 3; // 定义用椭圆模型表示的GNSS系统精度中正北方向顺时针到最近半长轴的夹角大小，单位为0.0054932479°。
+}
+
+//定义车辆的给油系统状态 ThrottleSystemStatus   
+message ThrottleSystemStatus{
+    uint32 thorttleControl = 1;    //油门踩踏强度 百分比：0~100%，精度0.1%
+    enum ThrottlePedalStauts{
+        UNAVAILABLE_PEDAL = 0;    //，车辆油门踏板检测器不可用； 
+        OFF = 1;  //，车辆油门踏板未踩下；
+        ON = 2;   //，踩下车辆的油门踏板；
+    }
+    ThrottlePedalStauts throttlePadel = 2;  //可选，油门踏板踩下情况
+    int32 wheelThrottles = 3;   //ThrottleAppliedStatus四轮分别的动力情况,位串,转化为二进制后，二进制第x位数字为1对应的含义：
+                                //  LEFT_FRONT=1, 左前活动；
+                                //LEFT_REAR=2, 左后活动；
+                                //RIGHT_FRONT=3, 右前活动；
+                                //RIGHT_REAR=4，右后活动。
+}
+
+//基本安全信息BSM   
+message BsmData{
+    string obuId = 1;	// 车辆 Id（OBU 设备序列号）
+    string plateNo = 2;	 // 可选，车牌号，字符串，最大为36个字符，支持中文和数字
+    uint64 timestamp = 3;  // 产生消息的最早时间，UTC 时间，单位毫秒，19700101000到现在的毫秒
+    Position3D pos = 4; // 经纬度和高程信息
+    PositionConfidenceSet posConfid = 5;  // 可选，定义95%置信水平的障碍物位置（经纬度和高度）综合精度
+    PositionAccuracy posAccuracy = 6; // 可选，定位精度，定义用椭圆模型表示的GNSS系统精度
+    AccelerationSet4Way acceleration = 7;	// 可选，加速度
+    enum TransmissionState{
+        TRANSMISSION_NEUTRAL = 0; // 空挡;
+        TRANSMISSION_PARK = 1; //停止档;
+        TRANSMISSION_FORWARD_GEARS = 2; // 前进档;
+        TRANSMISSION_REVERSE_GEARS = 3; // 倒挡
+        TRANSMISSION_RESERVED1 = 4; // 保留
+        TRANSMISSION_RESERVED2 = 5; // 保留
+        TRANSMISSION_RESERVED3 = 6; // 保留
+        TRANSMISSION_UNAVAILABLE = 7; // 未配备或不可用的值，
+    }
+    TransmissionState transmission = 8; //可选，车辆档位
+    uint32 speed = 9; // 定义车速大小，分辨率为0.02m/s，数值8191表示无效数值
+    uint32 heading = 10;		 // 航向角，为车头方向与正北方向的顺时针夹角。分辨率为0.0125°
+    int32 steeringWheelAngle = 11;	// 可选，[_240, 240]	方向盘角度，分辨率为1.5°
+    MotionConfidenceSet motionConfid = 12;  //可选，车辆运动状态精度
+    BrakeSystemStatus brakes = 13; // 可选，定义车辆的刹车系统状态，包括了7种不同类型的状态
+    ThrottleSystemStatus throttle = 14;     //可选，定义车辆的给油系统状态
+    VehicleSize size = 15; // 车辆尺寸
+    VehicleType vehicleType = 16; // 车辆基本类型
+    enum VehicleFuelType{
+        VEHICLE_TUEL_UNKNOWNFUEL = 0; // 汽油动力
+        GASOLINE = 1; // 汽油燃料类型
+        ETHANOL = 2; // 乙醇（包括混合）
+        DIESEL = 3; // 柴油机
+        ELECTRIC = 4; // 电动
+        HYBRID = 5; // 混合
+        HYDROGEN = 6; // 氢燃料类型
+        NATGASLIQUID = 7; // 天然气液化
+        NATGASCOMP = 8; // 天然气压缩
+        PROPANE = 9; // 丙烷
+    };
+    VehicleFuelType fuelType = 17;	// 可选，车辆燃油类型
+    enum DriveStatus{
+        AUTOPILOT = 0; //自动驾驶模式
+        MANUAL = 1; //人工驾驶模式
+        SECURITY=2; //人工接管模式
+    };
+    DriveStatus driveModedriveStatus = 18;	// 可选，驾驶状态 1：自动驾驶模式 2：人工驾驶模式 3：人工接管模式
+    enum EmergenyStatus{
+        NO_EMER = 0;
+        YES_EMER = 1;
+    };
+    EmergenyStatus emergencyStatus = 19; // 可选，危险报警闪光灯（双闪） 0否 1是
+    uint32 light = 20;   //可选，灯光状态，转化为二进制后，二进制左起第x位数字为1对应的含义：
+                        //1：OFF 未开灯；
+                        //2：LEFT 左转灯；
+                        //3-RIGHT 右转灯；
+                        //4-EMERGENCY 双闪；
+                        //5-REVERSE 倒车；
+                        //6-FOG 雾灯；
+                        //7-DIP 近光灯；
+                        //8-HIGH 远光灯
+    enum Wiper{
+        OFF = 0;  //未开启；
+        INT = 1;    // 间歇；
+        LO = 2; //低速；
+        HI = 3; //高速
+    }
+    Wiper wiper = 21;   //可选，雨刷
+    enum OutofControl{
+        NO_OUTCON = 0;
+        YES_OUTCON = 1;
+    };
+    OutofControl outofControl = 22; // 可选，车辆失控 0 否 1 是
+    uint32 endurance = 23;      // 可选，续航里程 单位0.01 km
+}
+
+//________________________________________________________________________________
+//交通参与者信息Object/Participant
+
+//历史轨迹PathHistory   
+message PathHistoryPoint {
+  Position3D pos = 1; 	// 轨迹点位置
+  uint32 timeOffset = 2; // 以10毫秒为单位，定义当前描述时刻（较早）相对于参考时间点（较晚）的偏差。用于车辆历史轨迹点的表达。值65535表示无效数据。
+  uint32 speed = 3; // 可选，定义车速大小，分辨率为0.02m/s，数值8191表示无效数值
+  PositionConfidenceSet posConfid = 4;  // 可选，定义95%置信水平的位置（经纬度和高度）综合精度
+  uint32 heading = 5; // 可选，航向角，分辨率为0.0125°
+}
+
+//车牌类型
+enum PlateType{
+    UNKNOWN_PLATE = 0;    //未知UNKNOWN_PLATE_TYPE = 0; 未知类型
+    LARGE_CAR_PLATE = 1; //大型汽车号牌
+    SMALL_CAR_PLATE = 2; //小型汽车号牌
+    EMBASSY_CAR_PLATE = 3; //使馆汽车号牌
+    CONSULATE_CAR_PLATE = 4; //领馆汽车号牌
+    OVERSEAS_CAR_PLATE = 5; //境外汽车号牌
+    FOREIGN_CAR_PLATE = 6; //外籍汽车号牌
+    ORDINARY_MOTORCYCLE_PLATE = 7;//普通摩托车号牌
+    MOPED_PLATE = 8; //轻便摩托车号牌
+    EMBASSY_MOTORCYCLE_PLATE = 9; //使馆摩托车号牌
+    CONSULATE_MOTORCYCLE_PLATE = 10; //领馆摩托车号牌
+    OVERSEAS_MOTORCYCLE_PLATE = 11; //境外摩托车号牌
+    FOREIGN_MOTORCYCLE_PLATE = 12; //外籍摩托车号牌
+    LOW_SPEED_PLATE = 13; //低速车号牌
+    TRACTOR_PLATE = 14; //拖拉机号牌
+    TRAILER_PLATE = 15; //挂车号牌
+    COACH_CAR_PLATE = 16; //教练汽车号牌
+    COACH_MOTORCYCLE_PLATE = 17; //教练摩托车号牌
+    TEMPORARY_ENTRY_PLATE = 20;//临时入境汽车号牌
+    TEMPORARY_ENTRY_MOTORCYCLE_PLATE = 21;//临时入境摩托车号牌
+    TEMPORARY_DRIVING_PLATE = 22; //临时行驶车号牌
+    POLICE_CAR_PLATE = 23; //警用汽车号牌
+    POLICE_MOTORCYCLE_PLATE = 24; //警用摩托车号牌
+    ORIGINAL_AGRICULTURAL_MACHINERY_PLATE = 25; //原农机号牌
+    HONGKONG_PLATE = 26; //香港入出境号牌
+    MACAU_PLATE = 27; //澳门入出境号牌
+    ARMED_POLICE_PLATE = 31; //武警号牌
+    ARMY_PLATE = 32; //军队号牌
+    NO_NUMBER_PLATE = 41; //无号牌
+    FAKE_PLATE = 42; //假号牌
+    MISAPPROPRIATION_PLATE = 43; //挪用号牌
+    UNRECOGNIZED_PLATE = 44; //无法识别
+    LARGE_NEW_ENERGY_YELLOW_GREEN_PLATE = 51;   //大型新能源汽车（左侧黄色右侧绿色双拼色底黑字）
+    SMALL_NEW_ENERGY_GREEN_PLATE = 52;          //小型新能源汽车（渐变绿底黑字）
+    OTHER_PLATE = 99;   //其他
+};   
+
+//交通参与者信息Participant   
+message ParticipantData {
+    uint64 ptcId = 1; // 目标对象ID,相同ID表示同一个目标物。
+    ParticipantType ptcType=2;    //路侧单元检测到的交通参与者类型。
+    DataSource dataSource = 3; // 0、未知数据源类型; 1、RSU 自身信息; 2、来源于参与者自身的v2x广播消息;3、来源于视频传感器; 4、来源于微波雷达传感器; 5、来源于地磁线圈传感器; 6、来源于激光雷达传感器; 7、2 类或以上感知数据的融合结果; 8~255 保留
+    string deviceIdList = 4;    //  数据融合的来源设备id，json数组
+    uint64 timestamp = 5;    //  时间戳
+    TimeConfidence timeConfidence = 6;  //可选，事件置信度
+    Position3D ptcPos = 7; // 定义经纬度和高，绝对位置
+    MapLocation mapLocation = 8;    //可选，所在地图位置，有地图信息时填写
+    PositionConfidenceSet posConfid = 9; // 可选，定义95%置信水平的位置（经纬度和高度）综合精度
+    uint32 speed = 10; // 单位为0.02 m/s
+    uint32 heading = 11; //车辆航向角。为车头方向与正北方向的顺时针夹角。分辨率0.0125度，范围0到359.9875度
+    MotionConfidenceSet motionConfid = 12;  //可选，运动状态精度，ptc中包括speedConfidence和headingConfid
+    AccelerationSet4Way accelSet = 13; // 可选，定义车辆四轴加速度：纵/横/垂直加速度，横摆角速度
+    AccelerationConfidence accelerationConfid = 14; //可选，目标四轴加速度置信度
+    ParticipantSize ptcSize = 15;   //可选，交通参与者尺寸信息
+    string vehicleBand = 16;    //可选，车辆品牌
+    VehicleType vehicleType	= 17; //可选，车型类型
+    string plateNo = 18; //可选，车牌号，字符串，最大为36个字符，支持中文和数字
+    PlateType plateType = 19; //可选，车牌类型
+    enum PlateColor{
+        UNKNOWN_PLATE_COLOR = 0;                    //未知
+        BLUE_PLATE = 1;     //蓝;
+        YELLOW_PLATE = 2;   //黄;
+        WHITE_PLATE = 3;    //白;
+        BLACK_PLATE = 4;    //黑;
+        YELLOW_GREEN_PLATE = 5;         //黄绿双色;
+        GRADIENT_GREEN_PLATE = 6;    //渐变绿
+    };
+    PlateColor plateColor = 20;   //可选，车牌颜色
+    enum VehicleColor{
+        UNKNOWN_VEHICEL_COLOR = 0;    //未知
+        WHITE = 1;  //白色
+        GRAY = 2;   //灰色
+        YELLOW = 3; //黄色
+        PINK = 4;   //粉色
+        RED = 5;    //红色
+        GREEN = 6;  //绿色
+        BLUE = 7;   //蓝色
+        BROWN = 8;  //棕色
+        BLACK = 9;  //黑色
+        PURPLE = 10;   //紫色
+        OTHER = 11; //其他
+    };
+    VehicleColor vehicleColor = 21;	 //可选，车辆颜色
+    ParticipantSizeConfidence ptcSizeConfid = 22; // 可选，目标尺寸置信度
+    enum ParticipantTypeExt{
+        UNKNOWN_OBJECT_TYPE_EXT=0;  // 未知障碍物
+        UNKNOWN_MOVABLE=1; // 未知可移动障碍物
+        UNKNOWN_UNMOVABLE=2; // 未知不可移动障碍物
+        CAR=3; // 轿车、SUV
+        VAN=4; // 面包车
+        TRUCK=5; // 卡车
+        BUS=6; // 大巴
+        CYCLIST=7; // 自行车
+        MOTORCYCLIST=8; //摩托车
+        TRICYCLIST=9; //三轮车、老年人代步车
+        PEDESTRIAN=10; //行人
+    }
+    ParticipantTypeExt ptcTypeExt = 23;	// 可选，目标类型扩展
+    uint32 ptcTypeExtConfid = 24; // 可选，定义目标类型扩展的置信度;分辨率为0.005。
+    uint32 statusDuration = 25; // 可选，以10毫秒为单位，定义当前描述时刻（较早）相对于参考时间点（较晚）的偏差。用于车辆历史轨迹点的表达。值65535表示无效数据。
+    repeated PathHistoryPoint pathHistory = 26;	// 可选，目标历史轨迹
+    uint32 tracking = 27;  // 可选，目标追踪时间，单位s
+    Polygon polygon = 28; // 可选，障碍物影响区域点集合
+    uint64 id=29; //可选，数据唯一标识id
+}
+
+//________________________________________________________________________________
+//障碍物信息Obstacles
+
+//障碍物类型     
+enum ObstaclesType{
+    UNKNOWN_OBSTACLES_TYPE = 0;//未知 ;
+    ROCKFALL = 1;   //崩岩;
+    LANDSLIDE = 2;  //滑坡;
+    ANIMAL_INTRUSION = 3;   //动物入侵;
+    LIQUID_SPILL = 4;   //液体溢出;
+    GOODS_SCATTERED = 5;     //货物散落;
+    TRAFFICCONE = 6;    //交通;
+    SAFETY_TRIANGLE = 7;    //三角牌;
+    TRAFFIC_ROADBLOCK = 8;  //交通路障;
+    INSPECTION_SHAFT_WITHOUT_COVER = 9; // 无盖井;
+    UNKNOWN_FRAGMENTS = 10;     //未知碎片;
+    UNKNOWN_HARD_OBJECT = 11;   //未知硬物体;
+    UNKNOWN_SOFT_OBJECT = 12;   //未知软物体;
+}
+
+//障碍物信息ObstacleData    
+message ObstacleData {
+    uint64 obsId = 1; // 障碍物ID
+    ObstaclesType obsType = 2; // 障碍物类型
+    uint32 obstypeCfd = 3; // 可选，定义障碍物类型的置信度;分辨率为0.005。
+    DataSource obsSource = 4; // 障碍物数据来源
+    uint64 timestamp = 5;    //时间戳
+    string deviceIdList=6;  //数据融合的来源设备id,json数组
+    Position3D obsPos = 7; // 定义障碍物经纬度和高，绝对位置
+    PositionConfidenceSet posConfid = 8; // 可选，定义95%置信水平的障碍物位置（经纬度和高度）综合精度
+    MapLocation mapLocation = 9;    //可选，所在地图位置，有地图信息时填写
+    uint32 speed = 10;// 障碍物速度，分辨率为0.02m/s，数值8191表示无效数值
+    uint32 heading = 11;  // 障碍物航向角，运行方向与正北方向的顺时针夹角。分辨率为0.0125°
+    MotionConfidenceSet motionConfid = 12;  //可选，运动状态置信度
+    uint32 verSpeed = 13;    //可选，障碍物垂直速度，分辨率为0.02m/s，数值8191表示无效数值
+    SpeedConfidence verSpeedConfid = 14;    // 可选，数值描述了95%置信水平的速度精度。该精度理论上只考虑了当前速度传感器的误差。但是，当系统能够自动检测错误并修正，相应的精度数值也成该提高
+    AccelerationSet4Way acceleration = 15; // 可选，定义四轴加速度：纵/横/垂直加速度，横摆角速度
+    ParticipantSize size = 16; // 障碍物尺寸大小
+    ParticipantSizeConfidence obsSizeConfid = 17; // 可选，障碍物尺寸大小置信度
+    uint32 tracking = 18; // 可选，障碍物追踪时间，单位s
+    Polygon polygon = 19; // 可选，障碍物影响区域点集合
+}
+
+//________________________________________________________________________________
+//道路交通标识RSI
+
+//参与到交通事件中的物体编号 
+message ObjIdValue {
+    uint64 ptcId = 1;    //可选，与ParticipantData里的ptcId保持一致，全局唯一
+    uint64 obsId = 2;    //可选，Obstacles编号，全局唯一
+    enum Role{
+        ACTIVE = 0;//主动
+        PASSIVE = 1;//被动
+        NOTCLEAR = 2;// 不明原因
+    };
+    Role role = 3;  //可选
+}
+
+//道路交通事件信息RteData （除了RteType）
+message RteData{
+    uint32 rteId = 1; // 每个事件有个ID编号，不同事件编号不同;ID循环编号
+    uint32 rteType = 2; // 道路的事件信息的类型，参考事件类型章节
+    string description = 3; //可选，描述，json字串
+                                //{
+                                //“id”: 810907429486297107,  //全局唯一事件ID
+                                //“state”: 0,   //-1: 发送到MEC失败
+                                                //-2: 发送到RSU失败
+                                                //-3: 发送到车端失败
+                                                //-4: 发送到云端失败
+                                                //0: 已生成
+                                                //1: 发送到MEC
+                                                //2: 发送到RSU
+                                                //3: 发送到车端
+                                                //4: 发送到云端
+                                //“desc”: { … }  //自定义描述信息，失败原因等
+                                //}
+    enum EventSource{
+        UNKNOWN_EVENT_SOURCE = 0; //未知
+        TRAFFIC_POLICE = 1; //交警
+        GOVENMENT = 2; //政府
+        METEOROLOGICAL_DEPARTMENT = 3; //气象部门
+        INTERNET_SERVICES = 4; //互联网服务
+        LOCAL_DETECTION = 5; // 本地检测
+    };
+    EventSource eventSource = 4;    //事件信息来源
+    DataSource dataSource = 5;  //路侧数据来源
+    string deviceIdList = 6;    //检测来源设备id，json数组
+    Position3D rtePos = 7; // 定义事件的经纬度和高，绝对位置。    
+    MapLocation mapLocation = 8;    //可选，所在地图位置，有地图信息时填写
+    uint32 eventRadius = 9; 	// 可选，特定圆形范围的半径大小，单位0.1m，默认值2000。表示交通事件影响区域边界离中心线的垂直距离，与RefPath字段组合，共同反映该区域的宽度以覆盖实际路段。
+    RsiTimeDetails timeDetails = 10; //可选，事件始终时间    
+    string priority = 11; //可选， 事件的优先级，数值长度占8位，其中低五位为0，为无效位，高三位为有效数据位，数值有效范围是B00000000 到B11100000，分别表示8档由低到高的优先级。
+    repeated ReferencePath referencePath = 12;  //可选，道路交通事件和标志的关联路径
+    repeated ReferenceLink referenceLinks = 13; //可选，相关车道
+    repeated ObjIdValue eventObjId = 14; //可选，参与到交通事件中的物体Id
+    int32 eventConfid = 15;     //可选，定义事件的置信度；分辨率为0.005。指示事件源设置的事件置信度 检测到的事件在某个地方真实程度的概率/置信度，以帮助车辆确定是否信任接收到的信息。
+    string eventImages = 16;    //可选，事件抓拍图片在云端的相对路径列表，id串列表，以“,”分割
+    string eventVideos = 17;    //可选，事件抓拍视频在云端的相对路径列表，id串列表，以“,”分割
+    uint64 sessionId = 18;      //会话id
+    uint64 id = 19;         //全局唯一ID，利用雪花算法生成
+}
+
+//________________________________________________________________________________
+//道路交通标志信息RtsData 
+message RtsData {
+    int32 rtsId = 1; // 交通标志编号
+    int32 rtsType = 2;	// 可选，交通标志类型 交通标志类型符合中国GB 5768.2 值为0表示未知类型或使用文字描述
+    DataSource dataSource = 3;  //路侧数据来源
+    string priority	= 4; //	可选，事件的优先级，数值长度占8位，其中低五位为0，为无效位，高三位为有效数据位，数值有效范围是B00000000 到B11100000，分别表示8档由低到高的优先级。
+    Position3D rtsPos = 5; //可选，标志标线位置
+    RsiTimeDetails timeDetails = 6; //可选， 事件生效时间
+    string description = 7; // 可选，描述，json字串
+                            //{
+                            //“id”: 810907429486297107,  //全局唯一事件ID
+                            //“state”: 0,   //-1: 发送到MEC失败
+                                            //-2: 发送到RSU失败
+                                            //-3: 发送到车端失败
+                                            //-4: 发送到云端失败
+                                            //0: 已生成
+                                            //1: 发送到MEC
+                                            //2: 发送到RSU
+                                            //3: 发送到车端
+                                            //4: 发送到云端
+                            //“desc”: { … }  //自定义描述信息，失败原因等
+                            //}
+    repeated ReferencePath refPathList = 8;	 // 可选，关联路径集合，每个路径为有序位置点列的方式，定义一个有向的作用范围，绝对位置。与车辆行进方向一致。根据事件影响区域来进行配置。
+    repeated ReferenceLink refLinkList	= 9; // 可选，定义道路交通事件的关联路段集合。
+    uint32 pathRadius = 10;    //可选，影响半径，单位：0.1m
+    uint64 sessionId = 11;      //会话id
+    uint64 id = 12;         //全局唯一ID，利用雪花算法生成
+}
+
+
+//道路交通标识RSI
+// message RsiData {
+//     int32 msgCnt = 1; // 消息编号
+//     string deviceId = 2; // 设备 ID
+//     int64 timestamp = 3; // 产生消息的最早时间，UTC 时间，单位毫秒，19700101000到现在的毫秒
+//     Position refPos = 4;	// 此 RSI 消息的参考位置
+//     repeated RteData eventsList = 5; // 此消息中包含的所有rte(交通事件信息) 数据
+//     repeated RtsData rtssList = 6; // 此消息中包含的所有rts（道路交通标志）数据
+// }
+
+
+//________________________________________________________________________________
+//地图信息MAP
+
+//连接车道ConnectionLane     
+message ConnectingLane{
+    uint32 lane = 1; //LaneId车道定义在每一条有向路段上，同一条有向路段上的每个车道，都拥有一个单独的ID。车道号以该车道行驶方向为参考，自左向右从1开始编号。
+    AllowedManeuvers maneuvers = 2;	//可选，同Lane中定义，该转向的允许行驶行为
+}
+
+//道路连接关系Connection     
+message Connection{
+    NodeReferenceId remoteIntersection = 1;	// 节点属性ID
+    ConnectingLane connectingLane = 2;	// 可选，用于定位上游车道转向连接的下游车道。包括下游车道ID以及该转向的允许行驶行为下游车道ID的作用范围是该车道所在的路段。
+    uint32 phaseId = 3; // 可选，对应的信号灯相位号，0值表示无效
+}
+
+//LaneAttributesVehicle
+message LaneAttributesParking{
+    uint32 parkingAndStoppingLanes = 1; //停车车道的属性：
+                                        //转为二进制后，二进制左起第x位数字为1对应的含义：
+                                        //parkingRevocableLane (1) , 停车场可撤销
+                                        //parallelParkinginUse(2), 停车使用中
+                                        //headlnParkinglnUse(3) ,
+                                        //doNotParkZone(4) , 请勿停车区
+                                        //parkingForBusUse(5), 巴士停车场
+                                        //parkingForTaxiUse(6), 出租车停车场
+                                        //noPublicParkingUse(7) 非公共停车场
+                                        //8-16：保留，暂设为0
+}
+
+//人行横道属性 LaneAttributesCrosswalk 
+message LaneAttributesCrosswalk{
+    uint32 pedestrianCrosswalks = 1;    //人行横道属性
+                                        //转为二进制后，二进制左起第x位数字为1对应的含义：
+                                        //crosswalkRevocableLane(1), 人行横道可撤销车道
+                                        //bicyleUseAllowed(2), 自行车允许使用
+                                        //isXwalkFlyOverLane(3), 天桥车道
+                                        //fixedCycleTi(4), 固定时间
+                                        //biDirectionalCycleTimes(5),循环时间
+                                        //hasPushToWalkButton(6),有Push To Walk 按钮
+                                        //audioSupport(7), 音频支持
+                                        //rfSignalRequestPresent(8),有信号
+                                        //unsignalizedSegmentsPresent(9)未知 
+                                        //10-16：保留，暂设为0
+}
+
+//自行车道的属性LaneAttributesBike 
+message LaneAttributesBike{
+    uint32 bikeLanes = 1;    //自行车道的属性
+                        //转为二进制后，二进制左起第x位数字为1对应的含义：
+                        //bikeRevocableLane (1), 自行车可撤销车道
+                        //pedestrianUseAllowed (2), 行人允许使用
+                        //isBikeFlyOverLane (3), 自行车飞越车道
+                        //fixedCycleTime (4), 固定周期时间
+                        //biDirectionalCycleTimes (5), 双向循环时间
+                        //isolatedByBarrier (6), 被隔断
+                        //unsignalizedSegmentsPresent (7)未标注
+                        //8-16：保留，暂设为0
+}
+
+//人行道属性LaneAttributesSidewalk
+message LaneAttributesSidewalk{
+    uint32 pedestrianSidewalkPaths = 1; //人行道属性：
+                                        //转为二进制后，二进制左起第x位数字为1对应的含义：
+                                        //sidewalk-RevocableLane(1), 人行道可撤销
+                                        //bicyleAllowed(2), 允许骑自行车
+                                        //isSidewalkFlyOverLane(3), 人行道飞越车道
+                                        //walkBikes(4) 步行自行车
+                                        //5-16：保留，暂设为0
+}
+
+//车道隔断 LaneAttributesBarrier
+message LaneAttributesBarrier{
+    uint32 mediansChannelization = 1;   //车道隔断离的属性定义（主要指示车道隔离断的物理形式）:
+                                        //转为二进制后，二进制左起第x位数字为1对应的含义：
+                                        //median-RevocableLane(1), 中间可撤销车道
+                                        //median(2), 中间车道
+                                        //whiteLineHashing(3), 白线虚线
+                                        //stripedLines(4), 单线
+                                        //doubleStripedLines(5), 双线
+                                        //trafficCones(6),交通牌
+                                        //constructionBarrier(7), 建筑屏障
+                                        //trafficChannels(8), 交通频道
+                                        //lowCurbs(9), 低路缘
+                                        //highCurbs(10) 高路缘
+                                        //11-16：保留，暂设为0
+}
+
+//标线车道 LaneAttributesStriping
+message LaneAttributesStriping{
+    uint32 roadwayMarkings = 1; //标线车道的属性定义，指示了车道上网纹或者标志标线所传达的道路信息，如禁行、路线标识等，辅助驾驶员通过一些复杂的路口或路段，提高驾驶安全性：
+                                //转为二进制后，二进制左起第x位数字为1对应的含义：
+                                //tripeToConnectingLanesRevocableLane (1)，可撤销车道标线
+                                //stripeDrawOnLeft (2),左边标线
+                                //stripeDrawOnRight (3), 右边标线
+                                //stripeToConnectingLanesLeft (4), 向左连接车道的标线
+                                //stripeToConnectingLanesRight (5), 向右连接车道的标线
+                                //stripeToConnectingLanesAhead (6) 标线连接前方车道
+                                //7-16：保留，暂设为0
+}
+
+//轨道车辆车道 LaneAttributesTrackedVehicle
+message LaneAttributesTrackedVehicle{
+    uint32 trainsAndTrolleys = 1;   //轨道车辆车道的属性定义，用来描述一条轨道车辆车道的特殊属性和其允许行驶的车辆种类：
+                                    //转为二进制后，二进制左起第x位数字为1对应的含义：
+                                    //RevocableLane(1) , 可撤销车道
+                                    //commuterRailRoadTrack(2), 通勤铁路轨道
+                                    //lightRailRoadTrack(3), 轻轨轨道
+                                    //heavyRailRoadTrack(4), 重型铁路轨道
+                                    //otherRailType(5) 其他导轨类型    
+                                    //6-16：保留，暂设为0
+}
+//车辆行驶车道LaneAttributesVehicle
+message LaneAttributesVehicle{
+    uint32 motorVehicleLanes = 1;   //车辆行驶车道的属性定义，用来描述一条车用车道的特殊属性和其允许行驶的汽车种类：
+                                    //转为二进制后，二进制左起第x位数字为1对应的含义：
+                                    //isVehicleRevocableLane(1), 可撤销车道
+                                    //isVehicleFlyOverLane(2), 飞越车道
+                                    //hovLaneUseOnly(3), 仅限车辆使用
+                                    //restrictedToBusUse(4), 仅限公共汽车使用
+                                    //restrictedToTaxiUse(5) , 仅限出租车使用
+                                    //restrictedfromPublicUse(6), 禁止公共使用
+                                    //hasIRbeaconCoverage(7) ,红外识别
+                                    //permissionOnRequest(8) 请求许可 
+                                    //9-16：保留，暂设为0
+}
+
+//车道本身所属的类别特性    
+message LaneTypeAttributes{
+    oneof LaneTypeAttributesOneOf{
+        LaneAttributesVehicle motorVehicleLanes = 1;      //可选，机动车道 LaneAttributesVehicle 位串
+        LaneAttributesCrosswalk pedestrianCrosswalks = 2;    //可选，人行横道 LaneAttributesCrosswalk 位串
+        LaneAttributesBike bikeLanes = 3;     //可选，自行车道    LaneAttributesBike  位串
+        LaneAttributesSidewalk pedestrianSidewalkPaths =4;      //可选，人行道 LaneAttributesSidewalk 位串
+        LaneAttributesBarrier mediansChannelization = 5;       //可选，中值和通道化 LaneAttributesBarrier 位串
+        LaneAttributesStriping roadwayMarkings = 6;     //可选，道路标线 LaneAttributesStriping 位串
+        LaneAttributesTrackedVehicle trainsAndTrolleys = 7;    //可选，火车和手推车 LaneAttributesTrackedVehicle 位串
+        LaneAttributesParking parkingAndStoppingLanes =8;       //可选，停车和停车车道 LaneAttributesParking 位串
+    }
+}
+
+//车道共享情况
+message LaneSharing{
+    uint32 shareWith = 1;   //定义车道被共享的情况。在已有的车道属性定义基础上，该数据表示此车道还会有其他的交通参与者出现，并可能拥有相同的路权,
+                            // 转为二进制后，二进制左起第x位数字为1对应的含义：
+                            //overlapping Lane Description Provided (1), 默认
+                            //multipleLanes Treated As One Lane (2), 多个车道被视为一条车道
+                            //other NonMotorized Traffic Types (3), 其他非机动交通
+                            //individual Motorized Vehicle Traffic (4), 个人机动车辆
+                            //bus Vehicle Traffic (5), 公共汽车车辆
+                            //taxi Vehicle Traffic (6), 出租车车辆
+                            //pedestrians Traffic (7), 多行人
+                            //cyclist Vehicle Traffic (8), 骑自行车的车辆
+                            //tracked Vehicle Traffic (9), 跟踪车辆
+                            //pedestrian Traffic (10), 行人 
+}
+
+//
+message LaneType{
+    uint32 choiceId = 1;    //车道本身所属类别的序号
+                            //0: LaneAttributes-Vehicle车辆行驶车道
+                            //1: LaneAttributes-Crosswalk人行横道属性
+                            //2: LaneAttributes-Bike自行车道的属性
+                            //3: LaneAttributes-Sidewalk人行道属性
+                            //4: LaneAttributes-Barrier车道隔断离的属性
+                            //5: LaneAttributes-Striping标线车道
+                            //6: LaneAttributes-TrackedVehicle轨道车辆车道
+                            //7: LaneAttributes-Parking停车车道的属性
+    LaneTypeAttributes value = 2;       //车道本身所属的类别特性
+}
+
+//车道属性LaneAttributes     
+message LaneAttributes{
+    LaneSharing shareWith = 1;  //可选，车道共享情况 位串
+    LaneType laneType = 2;    //不同类别车道的属性集合
+}
+
+// 车道边界类型LaneBoundary
+message LaneBoundary{
+    uint32 laneBoundaryType = 1;    //车道边界类型：
+                                    //1, BOUNDARY_WHITE_SOLID_LINES //白实线
+                                    //2, BOUNDARY_WHITE_DOTTED_LINES //白虚线
+                                    //3, BOUNDARY_YELLOW_SOLID_LINES //黄实线
+                                    //4, BOUNDARY_YELLOW_DOTTED_LINES //黄虚线
+                                    //5, BOUNDARY_DOUBLE_YELLOW_LINES //双黄线
+                                    //6, BOUNDARY_KERB //路缘，道牙
+                                    //7, BOUNDARY_LOW_FENCE //低栅栏
+                                    //8, BOUNDARY_HIGH_FENCE //高栅栏
+                                    //9, BOUNDARY_POST_FENCE //立柱栅栏
+                                    //10, BOUNDARY_UNKNOWN //未知
+    repeated Position3D laneBoundaryPoints = 2; //边界点列表
+}
+
+//车道Lane     
+message Lane{
+    uint32 laneId = 1; //LaneId车道定义在每一条有向路段上，同一条有向路段上的每个车道，都拥有一个单独的ID。车道号，以该车道行驶方向为参考，自左向右从 1 开始编号
+    uint32 laneWidth = 2;	//车道宽度 单位： 1cm
+    LaneAttributes laneAttributes = 3; // 共享属性
+    AllowedManeuvers maneuvers = 4; // 定义一个（机动车）车道的允许转向行为，参考《YDT3709_2020 基于 LTE 的车联网无线通信技术 消息层技术要求》
+    repeated Connection connectsTo = 5; // 车道与下游路段车道的连接关系列表
+    repeated RegulatorySpeedLimit speedLimits = 6; // 车道限速列表
+    repeated Position3D points = 7;	//车道中间点列表
+    repeated LaneBoundary leftBoundary = 8; //车道左边界
+    repeated LaneBoundary rightBoundary = 9; //车道右边界
+}
+
+//特定信号灯相位的等待区域 SignalWaitingLane               
+message SignalWaitingLane{
+    int32 laneWidth = 1;    //
+    Position3D points = 2;  //
+    repeated PhaseId allowedPhaseIds = 3;   //
+}
+
+//定位上游车道转向连接的下游车道的扩展信息 ConnectingLaneEx                
+message ConnectingLaneEx{
+    int32 targetSection = 1;    //连接路段索引
+    int32 targetLane = 2;   //连接车道索引
+    int32 connectingLaneWidth = 3;  //可选，指示真实或虚拟连接车道的宽度
+    Position3D connectingLanePoints = 4;    //可选，指示真实或虚拟连接车道的位置
+    bool isolatedConnectingLane = 5;    //可选，真正孤立的车道
+}
+
+//车道与下游路段车道的连接关系扩展信息列表 ConnectionEx             
+message ConnectionEx{
+    NodeReferenceId remoteIntersection = 1; //车道连接的链路的下游交叉点
+    SignalWaitingLane swl = 2;  //可选，特定信号灯相位的等待区域
+    repeated ConnectingLaneEx connectionLane = 3;    //可选，定位上游车道转向连接的下游车道的扩展信息
+    uint32 phaseId = 4;    //可选，相位
+    Maneuver turnDirection = 5; //可选，指示与此运动对应的转弯方向
+}
+
+//ST坐标 STPoint         
+message STPoint{
+    int32 sAxis = 1;    //车道参考线，单位：0.1m
+    int32 tAxis = 2;    //车辆在垂直车道参考线上的横向距离
+}
+
+//车道扩展信息列表LaneEx         
+message LaneEx{
+    int32 laneRefId = 1;    //关联车道标识ID
+    uint32 laneWidth = 2;    //可选，车道宽度，单位：1cm
+    LaneAttributes laneAttributes = 3;  //可选，车道属性
+    AllowedManeuvers maneuvers = 4;  //可选，车道出口的允许转向行为
+    repeated ConnectionEx connectsToEx = 5; //可选，车道与下游路段车道的连接关系扩展信息列表
+    repeated RegulatorySpeedLimit speedLimits = 6;  //可选，限速
+    repeated STPoint stPoints = 7;  //可选，ST坐标
+    repeated LaneBoundary leftBoundary = 8; //车道左边界
+    repeated LaneBoundary rightBoundary = 9; //车道右边界
+}
+
+//路口信号灯相位Movement       
+message Movement{
+    NodeReferenceId remoteIntersection = 1;
+    uint32 phaseId = 2; // 定义信号灯相位 ID，数值 0 表示无效 ID
+}
+
+//路段区域分段 Section      
+message Section{
+    uint32 SecId = 1;    //区间分段的标识ID
+    repeated LaneEx lanes = 2;   //车道扩展信息列表
+}
+
+//节点所在路段路段扩展信息      
+message LinkEx{
+    string name	= 1; // 可选，名称
+    NodeReferenceId upstreamNodeId = 2; // 上游节点ID
+    repeated RegulatorySpeedLimit speedLimits = 3; // 可选，限速集合
+    uint32 linkWidth = 4; // 可选，车道宽度，分辨率为 1cm
+    repeated Position3D refLine = 5; // 可选，此路段的参考线信息（0号车道中心线）
+    repeated MovementEx movementsEx = 6; //可选，该路段转向拓展集合
+    repeated Section sections = 7;	//可选，该路段包含的路段区域分段集合
+}
+
+//路段Link      
+message Link{
+    string name	= 1; // 可选，名称
+    NodeReferenceId upstreamNodeId = 2; // 上游节点ID
+    repeated RegulatorySpeedLimit speedLimits = 3; // 可选，限速集合
+    uint32 linkWidth = 4; // 可选，车道宽度，分辨率为 1cm
+    repeated Position3D points = 5; // 可选，此路段中心线信息
+    repeated Movement movements = 6; //可选，该路段转向信息
+    repeated Lane lanes = 7;	// 定义车道
+}
+
+//路段节点内的禁停区域 ProhibitedZone     
+message ProhibitedZone{
+    Polygon centralCircleProhibitedZone = 1;    //可选，中心禁停区
+    repeated Polygon nonMotorVehicleProhibitedZones = 2;    //可选，非机动车禁停区
+    repeated Polygon gridLineMarkingProhibitedZones = 3;    //可选，标记禁停区
+}
+
+//节点 交叉口     
+message Node{
+    string name = 1; // 交叉口名称
+    NodeReferenceId id = 2; // 交叉口ID
+    Position3D refPos = 3; // 交叉口位置
+    repeated Link inLinks = 4; // 可选，交叉口所在路段
+    repeated LinkEx inLinksEx = 5;  //可选，交叉口所在路段扩展信息
+    ProhibitedZone prohibitedZone = 6;  //可选，交叉口内的禁停区域
+}
+
+//地图数据MAP  
+message MAP {
+    uint32 timestamp = 1; // 1970到现在的总分钟数
+    repeated Node nodes = 2; // 交叉口集合
+    uint32 msgCnt = 3;   //消息编号，循环使用
+}
+
+//地图消息  
+message MapData {
+    string mapSlice = 1; // MAP 切片
+    MAP map = 2; // Map 数据
+    string eTag = 3; //	标识 MAP 版本
+    bool ack = 4; // 可选，是否需要返回确认消息，true 需要，不带或 false 不需要此处需填 TRUE，用于业务判断设备是否成功接收。
+    string seqNum = 5; // 可选，会话唯一标识，当需要确认时必填，用于匹配响应
+}
+
+//________________________________________________________________________________
+//车辆意图及请求消息VirData
+//车道变更请求  
+message ReqLaneChange{
+    NodeReferenceId upStreamNode = 1; //目标路段上游节点
+    NodeReferenceId downStreamNode = 2;   //目标路段下游节点
+    uint32 targetLane = 3; //目标路段id
+}
+
+//道路清空请求  
+message ReqClearTheWay{
+    NodeReferenceId upStreamNode = 1; //目标路段上游节点
+    NodeReferenceId downStreamNode = 2;   //目标路段下游节点
+    uint32 targetLane = 3; //目标路段id
+}
+
+//信号优先请求  
+message ReqSignalPriority{
+    NodeReferenceId intersectionId = 1;    //  指示目标交通信号的交叉口 id
+    MovementStatInfo requiredMove = 2;      //运动信息。 需要包括远程交叉口id和转弯方向
+    uint32 estimatedArrivalTime = 3;   //可选，时间偏移
+    uint32 distance2Intersection = 4;  //可选，到达路口的距离，单位0.1m
+}
+
+//感知信息共享请求  
+message ReqSensorSharing{
+    repeated ReferencePath detectorArea = 1;  //可选，请求的感知区域的相关路径列表
+}
+
+//车辆入场请求类型  
+message ParkingRequest{
+    uint32 req = 1;     //车辆入场请求类型，从右到左位数依次表示
+                        //ENTER = 1; //进入
+                        //EXIT = 2; //出
+                        //PARK = 3; //停车
+                        //PAY = 4; //支付
+                        //UNLOAD_PASSENGER = 5; //乘客下车
+                        //PICKUP_PASSENGER = 6; //乘客上车
+                        //UNLOAD_CARGO = 7; //卸货
+                        //LOAD_CARGO = 8; //装货
+                        //RESERVED1 = 9; //保留
+                        //REVERVED2 = 10; //保留
+                        //RESERVED3 = 11;//保留
+                        //REVERVED4 = 12; //保留
+}
+
+//停车位类型  
+message ParkingType{
+    uint32 parkingType = 1;    //停车位类型，从右到左位数依次表示
+                                //UNKNOWN = 1; //默认类型
+                                //ORDINARY = 2; //普通
+                                //DISABLED = 3; //不可用
+                                //MINI = 4; //小型
+                                //ATTACHED = 5; //附加
+                                //CHARGING = 6; //充电
+                                //STEREO = 7; //
+                                //LADY = 8; //女士
+                                //EXTENDED = 9; //扩展
+                                //PRIVATE = 10; //私人
+}
+
+//场站入场请求  
+message ReqParkingArea{
+    VehicleType vehicleType = 1;    //车辆类型分类
+    ParkingRequest req = 2; //来自车或交通站的停车区请求
+    ParkingType parkingType = 3;    //可选，停车位类型
+    uint32 expectedParkingSlotId = 4;    //可选，预期停车位id
+}
+
+//车辆请求信息  
+message ReqInfo{
+    oneof ReqInfoOneOf{
+        ReqLaneChange laneChange = 1;   //可选，车道变更请求
+        ReqClearTheWay clearTheWay = 2; //可选，道路清空请求
+        ReqSignalPriority signalPriority = 3;   //可选，信号优先请求
+        ReqSensorSharing sensorSharing = 4; //可选，感知信息共享请求
+        ReqParkingArea parking = 5;     //可选，场站入场请求
+    }
+}
+
+//车辆请求序列   
+message DriveRequest{
+    uint32 reqId = 1;   //本次请求的本地ID串行 VIR 消息中的相同请求应保持相同的 reqId状态请求状态
+    enum ReqStatus{
+        UNKNOWN = 0; //未知
+        REQUEST = 1; //提出请求但目标设备尚未确认
+        COMFIRMED = 2; //这个请求已经通过一些方法得到确认
+        CANCEL = 3; //车辆声称取消此请求
+        COMPLETE = 4; //车辆刚刚完成了这个驾驶行为
+    };
+    ReqStatus status = 2;   //请求消息的状态
+    string reqPriority = 3;    //可选，低五位保留，应设置为零从 B00000000 到 B11100000 的值代表最低到最高级别
+    string targetVeh = 4;  //可选，目标车辆的临时ID
+    string targetRsu = 5;   //可选，目标 RSU 的临时 ID
+    ReqInfo info = 6;   //可选，请求信息
+    uint32 lifeTime = 7;    //可选，以10毫秒为单位，此请求的生命周期时间偏移量
+}
+
+// 驾驶行为 
+message DriveBehavior{
+    int32 driveBehavior = 1;
+        //1:直行, GO_STRAIGHT_FORWARD;
+        //2:向左变更车道, LANE_CHANGING_TO_LEFT;
+        //3:向右变更车道, LANE_CHANGING_TO_RIGHT;
+        //4:驶入, RAMP_IN;
+        //5:驶出, RAMP_OUT;
+        //6:直行通过交叉路口，INTERSECTION_STRAIGHT_THROUGH;
+        //7:左转通过交叉路口, INTERSECTION_TURN_LEFT;
+        //8:右转通过交叉路口, INTERSECTION_TURN_RIGHT;
+        //9:掉头通过交叉路口, INTERSECTION_UTURN;
+        //10:走走停停, STOP_AND_GO;
+        //11:停止, STOP;
+        //12:减速慢行, SLOW_DOWN;
+        //13:加速行驶, SPEED_UP;
+        //14:泊车,PARKING;
+};
+
+//规划路径点信息    
+message PathPlanningPoint{
+    Position3D pos = 1; // 定义经纬度和高，绝对位置
+    PositionConfidenceSet posConfid = 2; // 可选，定义95%置信水平的位置（经纬度和高度）综合精度
+    uint32 speed = 3; // 可选，定义车速大小，分辨率为0.02m/s，数值8191表示无效数值
+    uint32 heading = 4; // 可选，车辆航向角。为车头方向与正北方向的顺时针夹角。分辨率为0.0125°。
+    SpeedConfidence speedConfid	= 5; //可选，数值描述了95%置信水平的速度精度。该精度理论上只考虑了当前速度传感器的误差。但是，当系统能够自动检测错误并修正，相应的精度数值也成该提高。
+    HeadingConfidence headingConfid = 6; // 可选，定义95%置信水平的航向精度
+    AccelerationSet4Way acceleration	= 7; // 可选，定义车辆四轴加速度：纵/横/垂直加速度，横摆角速度
+    AccelerationConfidence accelerationConfid = 8; // 可选，目标四轴加速度置信度
+    uint32 estimatedTime = 9; // 可选，目标到达目标位置的时间，分辨率为10ms
+    TimeConfidence timeConfidence = 10; // 可选，定义事件的置信度;分辨率为0.005。
+    ReferenceLink posInMap = 11;    //可选，与 MAP 相关的车道和链接位置
+}
+
+// // 规划路径PathPlanning    
+message PathPlanning {
+    repeated PathPlanningPoint pathPlanning = 1; // 路径规划信息
+}
+
+//车辆意图及请求VirData 
+message IarData{
+    PathPlanningPoint currentPos = 1;  //可选，地图中的当前位置
+    PathPlanning pathPlanning = 2; //可选，共享的实时路径规划,按时间顺序列出
+    DriveBehavior currentBehavior = 3; //可选，与路径规划相关的驱动行为
+    repeated DriveRequest reqs = 4; //可选，请求序列
+}
+
+//车辆意图及请求消息 VirData 
+message VirData{
+    uint32 msgCnt = 1;  //定义消息编号。
+    string vehicleId = 2;  //临时车辆ID，与 BsmData 中的 obu_id 相同
+    uint64 timestamp = 3;    //UTC 时间，单位毫秒，19700101000到现在的毫秒
+    Position3D pos = 4;   //
+    IarData intAndReq = 5;    //车辆意图及请求
+}
+
+//________________________________________________________________________________
+//车辆协作或引导RscData
+
+//驾驶建议 
+message DriveSuggestion{
+    DriveBehavior suggestion = 1;   //允许或推荐的驾驶行为,在以下时间范围内 如果匹配相关链接或路径
+    uint32 timeOffset = 2;  //可选，以10毫秒为单位，定义当前描述时刻（较早）相对于参考时间点（较晚）的偏差。用于车辆历史轨迹点的表达。值65535表示无效数据
+    ReferenceLink relatedLink = 3;   //可选，车辆决定是否遵循建议的额外判断条件
+    ReferencePath relatedPath = 4;   //可选，车辆决定是否遵循建议的额外判断条件
+}
+
+//协调规划相关信息 
+message CoordinationInfo{
+    int32 coordinationInfo = 1;    //协调规划相关信息，从左到右位数依次表示
+                        //COOPERATIVE_LANE_CHANGING = 1; //合作式变道
+                        //COOPERATIVE_VEH_MERGING = 2; //合作式车辆汇入
+                        //LANE_CHANGING_AT_INTERSECTION = 3; //交叉路口变道
+                        //NO_SIGNAL_INTERSECTION_PASSING = 4; //通过无信号交叉口
+                        //DYNAMIC_LANE_MANAGEMENT = 5; //动态车道管理
+                        //LANE_RESERVATION = 6; //车道预定
+                        //LANE_RESTRICTION = 7; //车道禁行
+                        //SIGNAL_PRIORITY = 8; //信号优先
+}
+
+//定义RSU对某单一车辆的协调规划信息   
+message VehicleCoordination{
+    string vehId = 1;  //目标车辆的临时 ID
+    DriveSuggestion driveSuggestion = 2;  //可选，驾驶建议
+    PathPlanning pathGuidance = 3; //可选，使用路径引导进行协调
+    CoordinationInfo info = 4;  //可选，与当前协调相关的详细信息
+}
+
+//对道路或车道的引导信息   
+message LaneCoordination{
+    ReferenceLink targetLane = 1;    //RSU 试图控制的目标链路或通道
+    ReferencePath relatedPath = 2;   //可选，参考路径（如果存在）以帮助车辆确定,是否应该遵循协调
+    uint64 tBegin = 3;  //可选，协作规划开始时间，UTC 时间，单位毫秒，19700101000到现在的毫秒
+    uint64 tEnd = 4;    //可选，结束时间，UTC 时间，单位毫秒，19700101000到现在的毫秒
+    uint32 recommendedSpeed = 5;    //可选，推荐速度，分辨率为0.02m/s，数值8191表示无效数值
+    DriveBehavior recommendedBehavior = 6; //可选，推荐驾驶行为
+    CoordinationInfo info = 7;  //可选，与当前协调相关的详细信息
+    string description = 8; //可选，附加描述信息
+}
+
+//车辆协作或引导RscData   
+message RscData{
+    uint32 msgCnt = 1;  //定义消息编号。
+    string rsuId = 2;  //RSU id
+    uint64 timestamp = 3;    //产生消息的最早时间，UTC 时间，单位毫秒，19700101000到现在的毫秒
+    Position3D pos = 4;   //参考点位置
+    VehicleCoordination coordinates = 5;    //可选，定义RSU对某单一车辆的协调规划信息。 包括车辆的临时标识ID，以及RSU提供的驾驶建议和路径规划等信息。
+    LaneCoordination laneCoordinates = 6;  //可选，对道路或车道的引导信息
+}
+
+//________________________________________________________________________________
+//合作感知信息CAM
+//示场地类型   
+enum SceneType{
+    SCENE_TYPE_URBAN = 0; // 表示开放区域（城市道路）;
+    SCENE_TYPE_HIGHSPEED = 1 ; // 表示半封闭区域（高速高架、桥梁隧道）;
+    SCENE_TYPE_CLOSEDPARK = 2; // 表示封闭限定区域（园区、机场、停车场），
+    SCENE_TYPE_RESERVED = 3; //为预留
+}
+
+//合作感知信息   
+message CamData {
+    uint32 type = 1; // type取值为1,表示MEC向RSU发送目标物和事件信息
+    string ver = 2;	// 版本号，目前版本固定为“01”
+    uint32 msgCnt = 3; // 定义消息编号。发送方对发送的同类消息(type=1)依次进行编号。编号循环发送。
+    uint64 timestamp = 4; // 产生消息的最早时间，UTC 时间，单位毫秒，19700101000到现在的毫秒
+    string deviceId = 5; // MEC的设备编号。例如，MEC的ESN编号，或者每个MEC的序列编号。只支持可见字符（ASCII码[32,126]）。
+    string mapDeviceId = 6; //位置相关的设备编号
+    Position3D refPos = 7; // 位置基准参考点,绝对坐标(感知区域中心点)。注：MEC的的经纬度坐标位置。
+    SceneType sceneType	= 8; // 可选，表示场地类型
+    repeated ParticipantData ptcList = 9; //可选，定义目标物列表，属于RSM中的交通参与者
+    repeated ObstacleData obstacleList = 10; //可选，定义障碍物列表，属于RSM中的障碍物
+    //repeated RsiData rsi_list = 10;	// 交通事件和标志信息。
+    repeated RteData rteList = 11;     //可选，交通事件信息
+    repeated RtsData rtsList = 12;     //可选，交通标志信息
+    repeated BsmData bsmList = 13;    //可选，基本安全消息
+    repeated VirData virList = 14;     //可选，车辆意图及请求消息
+    repeated RscData rscList = 15;     //可选，车辆协作或引导消息
+    SpatData roadSignalState = 16; // 可选，实时交通相位SPAT信息
+    repeated TrafficFlow trafficFlow = 17;     //可选，实时交通流信息
+    repeated SignalScheme signalSchemeList = 18;  //可选，信号优化建议列表
+    repeated Polygon detectedRegion = 19; // 可选，定义感知区域列表
+    uint64 toAlgorithmTime = 20; //  可选，到达融合算法的时间戳，UTC 时间，单位毫秒，19700101000到现在的毫秒
+    uint64 toDatabusTime = 21; // 可选，到达当前接收端的时间戳，UTC 时间，单位毫秒，19700101000到现在的毫秒
+    uint64 toCloudTime = 22; // 可选，到达云端的时间戳，UTC 时间，单位毫秒，19700101000到现在的毫秒
+    uint64 id=23;      // 可选，数据唯一标识id
+}
+
+//________________________________________________________________________________
+//设备类型 DeviceType   
+enum DeviceType{
+    DEVICE_TYPE_UNKONWN = 0; //默认
+    OBU = 1; //  车载
+    RSU = 2; //  路侧单元
+    OTHER = 100; //  其他 外接设备
+    CAMERA = 200; //  摄像机
+    MICRO_RADAR = 202; //  微米波雷达
+    LASER_RADAR = 203; //  激光雷达
+    MEC = 204; // MEC
+    SIBOX = 205; //  信号灯控制器
+    WEATHER_SENSOR = 206; // 天气传感器
+    VMS = 207; // 可变情报板
+    MMW_RADAR = 208; // 毫米波雷达
+    CLOUD = 209; // 云平台
+    ELECTRONIC_TAGS = 210; // 电子标牌
+    WISDOM_LIGHTPOLE = 211; // 智慧灯杆
+    WISDOM_MANHOLECOVER = 212; // 智慧井盖
+    WISDOM_PLATFORM = 213; // 智慧站台
+    CARRIER = 214;  //载体杆
+    //SIGNAL = 215;   //信号灯
+    INTEGRATED_CABINET = 216; //综合机柜
+    CORE_SW = 217;  //核心交换机
+    GATHER_SW = 218;    //汇聚交换机
+    ACCESS_SW = 219;    //接入交换机
+    POLE_BOX = 220;     //抱杆箱
+}
+
+//状态列表 
+message StatusData{
+    string deviceId = 1; //设备id
+    string mapDeviceId = 2; //位置相关的设备编号
+    DeviceType deviceType = 3; //设备状态
+    enum StatusType{
+        DEV_STATUS_UNKNOWN = 0;
+        DEV_STATUS_OK = 1; //  无异常
+        DEV_STATUS_ABNORMAL = 2; //   设备运行状态异常
+        DEV_STATUS_OFF = 3; //  离线
+        DEV_STATUS_REBOOT = 4; //   重启中
+        DEV_STATUS_MAINTAIN = 5;  //  设备维修中
+        DEV_STATUS_SCRAP = 6; //  设备已报废
+    };
+    StatusType statusType = 4; //
+    Position3D posDevice = 5; //设备绝对经纬度坐标
+}
+
+//V2X分布式环境通知消息DENM 
+message DenmData{
+    uint32 type = 1; // type取值为2，表示MEC向RSU发送的心跳状态消息
+    string ver = 2; // 版本号，目前版本固定为“01”
+    uint32 msgCnt = 3; // 定义消息编号。发送方对发送的同类消息(type=2)依次进行编号。编号循环发送。
+    uint64 timestamp = 4;  // 产生消息的最早时间，UTC 时间，单位毫秒，19700101000到现在的毫秒
+    string address = 5;	// 设备所在位置 (a) 提供ASCII字符文本形式;(b) 提供中文编码形式，符合GB2312_80的编码规则，一个字有2字节信息编码。
+    Position3D refPos = 6; // 位置基准参考点,绝对坐标
+    SceneType sceneType = 7; // 表示场地类型
+    repeated StatusData statusList = 8; //	定义MEC/感知节点/RSU状态列表，该列表第一个表示设备自身
+}
+
+//（MEC侧、RSU侧发送）云端回执消息 RsiReply，具体字段意思见协议5.1.9.1、5.1.9.2
+message RsiReply{
+    uint64 id = 1;
+    uint32 eventType = 2; //事件类型 0-rte,1-rts
+    string sourceDeviceId = 3; //来源设备编码
+    string targetDeviceId = 4; //目标设备编码
+    string creatTime =5; //创建事件
+    string distributionTime = 6; //下发时间
+    string completionTime = 7; //完成时间
+    string updateTime = 8; //更新时间
+    uint32 operationType = 9; //操作类型 0-自动 1-手工,2-未知
+    uint64 camDataId = 10; //cam外键
+    uint64 dataId = 11; //rte/rts外键
+    uint64 eventSourceId = 12; //事件来源
+    uint32 distributionStatusId = 13; //下发状态，0-未知，1-下发中，2-已下发(针对rsu回执，ans编码成功)，3-下发失败,4-asn编码失败
+    string description=14;      //可选，mec侧的回执不需要，rsu广播rsi失败时，需要增加失败原因描述
+    string sourceTopic = 15;  //转发状态的源topic编码
+    string targetTopic =16;  // 转发状态的目标topic编码
+}
+
+//（RSU侧发送RSM)云端回执RsuRsmReply，具体字段意思见5.1.9.3
+message RsuRsmReply{
+    string sourceDeviceId = 1; //来源设备编码,Mec的Deviced
+    string targetDeviceId = 2; //目标设备编码，Rsu设备编码
+    uint64 camDataId = 3; //cam外键，取自CamData中的id字段
+    repeated RsmReply rsmReplyList=4;//交通参与者回执id、状态列表
+    string targetTopic =5;  // 转发状态的目标topic编码，rsu朝云端上报rsm回执的topic
+    uint64 timestamp=6;   //rsm回传消息创建完成时间
+}
+
+// RSM状态回执消息RsmReply
+message RsmReply{
+    uint64 dataId=1;//Rsm外键，取自ParticipantData中的id字段
+    uint32 distributionStatusId = 2; //下发状态，0-未知，1-下发中，2-已下发(针对rsu回执，ans编码成功)，3-下发失败,4-asn编码失败
+    string description=3;      //可选，rsu广播rsm失败时，需要增加失败原因描述
+}
+
+//监控统计消息 MonitorStatsData
+message MonitorStatsData{
+    uint64 timestamp = 1;  //产生消息的最早时间，UTC 时间，单位毫秒，19700101000到现在的毫秒
+    string deviceId = 2;  //mec设备的deviceId编号
+    uint64 camNums =3;   //当前时间整点到此刻时间间隔内累积传输cam消息数量，最大时间间隔1h
+    uint64 participantNums = 4; //当前时间整点到此刻时间间隔内累积传输交通参与者消息数量，最大时间间隔1h
+    uint64 rteNums =5;   //当前时间整点到此刻时间间隔内累积传输rte消息数量，最大时间间隔1h
+    uint64 trafficflowNums=6; // 当前时间整点到此刻时间间隔内累积传输trafficflow消息数量，最大时间间隔1h
+    uint64 trafficflowStatNums=7; // 当前时间整点到此刻时间间隔内累积传输trafficflowStat消息数量，最大时间间隔1h
+    uint64 intersectionStatNums=8; // 当前时间整点到此刻时间间隔内累积传输intersectionStat消息数量，最大时间间隔1h
+    uint64 phaseStatNums=9; // 当前时间整点到此刻时间间隔内累积传输phaseStat消息数量，最大时间间隔1h
+    uint64 rtsNums=10; // 当前时间整点到此刻时间间隔内累积传输rts消息数量，最大时间间隔1h
+    uint64 cameraPathListNums=11;//当前时间整点到此刻时间间隔内累积传输cameraPathList消息数量，最大时间间隔1h
+    uint64 cameraPathNums=12;// 当前时间整点到此刻时间间隔内累积传输cameraPath消息数量，最大时间间隔1h
+    uint64 radarPathListNums=13;// 当前时间整点到此刻时间间隔内累积传输radarPathList消息数量，最大时间间隔1h
+    uint64 radarPathNums=14;// 当前时间整点到此刻时间间隔内累积传输radarPath消息数量，最大时间间隔1h
+}
+
+

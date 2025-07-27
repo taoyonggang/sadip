@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<profiles xmlns="http://www.eprosima.com/XMLSchemas/fastRTPS_Profiles">
+    <transport_descriptors>
+        <transport_descriptor>
+            <transport_id>TCPv4_SERVER</transport_id>
+            <type>TCPv4</type>
+            <listening_ports>
+                <port>7400</port>
+            </listening_ports>
+            <calculate_crc>false</calculate_crc>
+            <check_crc>false</check_crc>
+        </transport_descriptor>
+    </transport_descriptors>
+
+    <participant profile_name="TCP_server" is_default_profile="true">
+        <rtps>
+            <userTransports>
+                <transport_id>TCPv4_SERVER</transport_id>
+            </userTransports>
+            <useBuiltinTransports>false</useBuiltinTransports>
+            <prefix>44.53.01.5f.45.50.52.4f.53.49.4d.41</prefix>
+            <builtin>
+                <discovery_config>
+                    <discoveryProtocol>SERVER</discoveryProtocol>
+                    <leaseAnnouncement><sec>1</sec><nanosec>0</nanosec></leaseAnnouncement>
+                    <leaseDuration><sec>3</sec><nanosec>0</nanosec></leaseDuration>
+	                  <clientAnnouncementPeriod>
+		                    <nanosec>250000000</nanosec>
+	                  </clientAnnouncementPeriod>
+                </discovery_config>
+                <metatrafficUnicastLocatorList>
+                    <locator>
+                        <tcpv4>
+                            <address>10.10.3.30</address>
+                            <port>7400</port>
+                        </tcpv4>
+						<tcpv4>
+                            <address>58.34.245.150</address>
+                            <port>7400</port>
+                        </tcpv4>
+                    </locator>					
+                </metatrafficUnicastLocatorList>
+            </builtin>
+        </rtps>
+    </participant>
+</profiles>

@@ -1,0 +1,119 @@
+syntax = "proto3";
+
+package cn.seisys.rbx.comm.bean.multi;
+
+option java_package = "cn.seisys.rbx.comm.bean.multi";
+option java_outer_classname = "MultiPathDataProtos";
+
+message RadarPath{
+		int32 objID=1;  //车辆编号
+		double longitude=2; //目标的坐标点经度， GPS 坐标 WGS84 坐标系，精度要求cm，精确到小数点后 8 位；
+		double lattitude=3; //目标的坐标点纬度， GPS 坐标 WGS84坐标 系，精度要求cm，精确到小数点后8位;
+		sint32 elevation=4; //消息的参考坐标点海拔高度 定义目标海拔高程。 分辨率为 0.1 米，取值范围-32768 到 32767，数值-32768 表示无效数值
+		float objX=5; //目标检测物相对于雷达坐标系的坐标X
+		float objY=6; //目标检测物相对于雷达坐标系的坐标Y
+		float objZ=7; //目标检测物相对于雷达坐标系的坐标Y
+		float obj_ENU_X=8; //目标检测物相对于ENU坐标系的坐标X
+		float obj_ENU_Y=9; //目标检测物相对于ENU坐标系的坐标Y
+		float obj_ENU_Z=10; //目标检测物相对于ENU坐标系的坐标z
+		sint32 speed=11; //表示范围（-300~355.35m/s），保留2位小数，除100表示；
+		sint32 speedX=12; //车辆或其他交通参与者相对于雷达坐标系 x 轴的速度矢量。保留2位小数，除100表示；
+		sint32 speedY=13; //车辆或其他交通参与者相对于雷达坐标系 y 轴的速度矢量。保留2位小数，除100表示；
+		sint32 speedZ=14; //车辆或其他交通参与者相对于雷达坐标系 z 轴的速度矢量。保留2位小数，除100表示；
+		sint32 speed_ENU_X=15; //车辆或其他交通参与者相对于雷达ENU坐标系 x 轴的速度矢量。保留2位小数，除100表示；
+		sint32 speed_ENU_Y=16; //车辆或其他交通参与者相对于雷达ENU坐标系 y 轴的速度矢量。保留2位小数，除100表示；
+		sint32 speed_ENU_Z=17; //车辆或其他交通参与者相对于雷达ENU坐标系 z 轴的速度矢量。保留2位小数，除100表示；
+		int32 objOri=18; //定义目标航向角，按车头方向与正北方向的 顺时针夹角计算。取值范围 0 到 28800.单位为 0.0125°，数值 28800 表示未知或无效。
+		int32 speedHeading=19; //定义车辆航向角，按车速方向与正北方向的 顺时针夹角计算。取值范围 0 到 28800.单位为 0.0125°，数值 28800 表示未知或无效。
+		int32 objWidth=20; //车辆车身或其他交通参与者的宽度。单位为1cm。数值0表示无效数据
+		int32 objLength=21; //车辆车身或其他交通参与者的长度。单位为1cm。数值0表示无效数据。		
+		int32 objHeight=22; //车辆车身或其他交通参与者的高度。单位为1cm。数值0表示无效数据。
+		sint32 aclr=23; //加速度 定义车辆加速度。分辨率为0.01m/s 2 ，取值范围（-2000至2000），数值2001为无效数值。
+		int32 aclrAngle=24;//按加速度与正北方向的 顺时针夹角计算。取值范围 0 到 28800.单位为 0.0125°，数值 28800 表示未知或无效。
+		sint32 aclr_x=25; //雷达坐标系x方向加速度 定义车辆加速度。 分辨率为0.01m/s 2 ， 取值范围（-2000至2000），数值2001为无效数值。
+		sint32 aclr_y=26; //雷达坐标系y方向加速度 定义车辆加速度。 分辨率为0.01m/s 2 ， 取值范围（-2000至2000），数值2001为无效数值。
+		sint32 aclr_z=27; //雷达坐标系z方向加速度 定义车辆加速度。 分辨率为0.01m/s 2 ， 取值范围（-2000至2000），数值2001为无效数值。
+		sint32 aclr_enu_x=28; //ENU坐标系x方向加速度 定义车辆加速度。 分辨率为0.01m/s 2 ， 取值范围（-2000至2000），数值2001为无效数值。
+		sint32 aclr_enu_y=29; //ENU坐标系y方向加速度 定义车辆加速度。 分辨率为0.01m/s 2 ， 取值范围（-2000至2000），数值2001为无效数值。
+		sint32 aclr_enu_z=30; //ENU坐标系z方向加速度 定义车辆加速度。 分辨率为0.01m/s 2 ， 取值范围（-2000至2000），数值2001为无效数值。
+		int32 objState=31; //0 未知 1 直行 2 左转 3 右转 4 掉头 5 停止 6 逆行 7-变道 8-占用应急车道
+		int32 objCf=32; //数值范围 1~100 参与者存在的置信度
+		int32 objType=33; //车型 1 小型车 2 中型车 3 大型车 4 行人 5 非机动车 6 超大型车 9 其他
+		int32 objKind=34; //0-未知 10-乘用车 20-小型卡 车、皮卡、面包车 25-大卡车、货车 40-摩托车 50-公交、短驳、换乘 60- 消防、救护、警车等特种车辆
+		float objDist=35; //目标距离雷达相对距离 单位：米
+}
+
+message CameraPath{
+		int32 objID=1;  //车辆编号
+		int32 laneNo=2;  //车道编号
+		string plateNo=3; //号牌号码	
+		int32 plateColor=4; //号牌颜色
+		int32 vehType=5; //车型 1：小型车，2：中型车，3：大型车，99：其它
+		string vehColor=6; //目标为机动车时为车身颜色，按照国家标准GA 24.8-2005有关规定 A	白 B灰  C黄 D粉 E红 F紫 G绿 H蓝 I棕 J黑 Z其它
+		int32 objX=7; //跟踪点（车牌中心点或行人/非机中心点）在图片中的横坐标
+		int32 objY=8; //跟踪点（车牌中心点或行人/非机中心点）在图片中的纵坐标
+		int32 objDistX=9;	//目标N跟踪点至相机的x距离 单位：0.01米
+		int32 objDistY=10;	//目标N跟踪点至相机的y距离 单位：0.01米
+		int32 objBottomMidX=11;	//跟踪底边中心点在图片中的横坐标
+		int32 objBottomMidY=12;	//跟踪底边中心点在图片中的纵坐标
+		GlobalSpaceInfo globalSpaceInfo=13; //相机空间坐标
+		int32 objCf=14; //数值范围 1~100 参与者存在的置信度
+		int32 objKind=15; //车型判断 0-未知 10-乘用车 20-小型卡 车、皮卡、面包车 25-大卡车、货车 40-摩托车 50-公交、短驳、换乘 60- 消防、救护、警车等特种车辆
+		
+		uint32 objImgTop=16; //图片imgTop
+		uint32 objImgLeft=17; //图片imgLeft
+		uint32 objImgRight=18; //图片imgRight
+		uint32 objImgBottom=19; //图片imgBottom
+}
+
+message GlobalSpaceInfo{
+	GNSSPosition position_gnss=1; //相机GNSS位置信息
+	UTMPosition position_utm=2; //相机UTM位置信息
+	int32 objOri=3; //定义目标航向角，按车头方向与正北方向的 顺时针夹角计算。取值范围 0 到 28800. 单位为 0.0125°， 数值 28800 表示未知或无效。
+	int32 objWidth=4; //车辆车身或其他交通参与者的宽度。 单位为1cm。 数值0表示无效数据
+	int32 objLength=5; //车辆车身或其他交通参与者的长度。单位为1cm。数值0表示无效数据。
+	int32 objHeight=6; //车辆车身或其他交通参与者的高度。 单位为1cm。 数值0表示无效数据。
+	int32 speedX=7; //车辆或其他交通参与者x 轴的速度矢量。保留2位小数，除100表示；单位为 0.01 m/s。可为负值。
+	int32 speedY=8; //车辆或其他交通参与者y 轴的速度矢量。保留2位小数，除100表示；单位为 0.01 m/s。可为负值
+	int32 speedZ=9; //车辆或其他交通参与者z 轴的速度矢量。保留2位小数，除100表示；单位为 0.01 m/s。可为负值	
+	int32 speed=10; //车辆速度
+}
+
+message GNSSPosition{
+	double longitude=1; //相机GNSS经度
+	double latitude=2; //相机GNSS纬度
+}
+
+message UTMPosition{
+	double x=1; //相机UTM位置信息x
+	double y=2; //相机UTM位置信息y
+}
+
+//RadarDevPathList
+message RadarDevPathList{
+	int64 dataTime=1; //发送时间
+	string deviceID=2; //设备编号
+	int32 areaNo=3; //区域编号
+	repeated RadarPath radarPathList=4;	//雷达轨迹数据列表
+	int64 processTime=5; //雷达结构化数据产生时间，unixTime 时间戳， 单位到毫秒
+	int64 commRcvTime=6; //通信程序接收到设备数据的时间 unixTime 时间戳,单位到毫秒
+}
+
+//CameraPathList
+message CameraPathList{
+	int64 dataTime=1; //数据时间
+	string deviceID=2; //设备编号
+	int32 capType=3; //0：混合，1：车头，2：车尾
+	int32 objCount=4; //相机目标个数
+	repeated CameraPath cameraPathList=5;	//相机轨迹数据列表
+	int64 processTime=6; //相机结构化数据产生时间，unixTime 时间戳， 单位到毫秒
+	int64 commRcvTime=7; //通信程序接收到设备数据的时间 unixTime 时间戳,单位到毫秒
+}	
+
+
+message MultiPathDatas{
+	int64 sendTime=1; //发送时间
+	repeated RadarDevPathList lidarPathList=2;	//激光雷达轨迹数据列表
+	repeated RadarDevPathList mwrPathList=3;	//4D毫米波雷达轨迹数据列表
+	repeated CameraPathList cameraPathList=4;	//相机轨迹数据列表
+}

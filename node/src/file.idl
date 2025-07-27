@@ -1,0 +1,49 @@
+﻿module cn{
+  module seisys {
+    module dds {
+
+        typedef sequence<octet> fileSeq;
+
+        
+        struct FileData {
+                string uuid;
+                string srcNodeId;                         
+                string toNodeId;                         
+                string fileName;                        
+                string saveFileName;                     
+                string  subDir;                          
+                boolean isEnd;                              
+
+                unsigned long fileTotalSize;                   
+                long long fModifyTime;                     
+
+                unsigned long blockSeq;                             
+                unsigned long totalBlockNum;                        
+
+                fileSeq  blockContent;                     
+                unsigned long blockContentLen;                  
+
+                string transferId;                       
+                string md5;                              
+         };
+
+        
+        struct FileDataReply {
+				string uuid;
+                string srcNodeId;                      
+                string toNodeId;                        
+                string fileName; 
+				string replyUuid;                         
+                string  subDir;
+                boolean isEnd;
+                unsigned long blockSeq;
+                unsigned long totalBlockNum;
+				unsigned long fileTotalSize;
+				sequence<unsigned long> blockLosts;         
+                long state;                                 
+        };
+		
+		
+    };
+  };
+};

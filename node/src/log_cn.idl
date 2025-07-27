@@ -1,0 +1,19 @@
+﻿module cn{
+  module seisys {
+    module dds {
+
+        typedef sequence<octet> OctetSeq;
+
+        //此数据需要动态订阅，如果没有客户端订阅，就不发送,没个节点只有一个日志通道，可以通过文件名来过滤，只展示自己的需要的数据
+        @topic
+        struct LogData {
+                string uuid;
+                @key string srcNodeId;                           //来自哪个节点
+                @key string toNodeId;                           //那个节点需要处理，"*"，表示所有
+                @key string fileName;                         //文件名
+                string newLogs;                          //最新的日志内容
+        };
+
+    };
+  };
+};

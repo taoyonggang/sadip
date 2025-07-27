@@ -1,0 +1,22 @@
+﻿module cn{
+  module seisys {
+    module dds {
+
+		struct TopicMonInfo{
+			string uuid;        
+			short domain;       
+			string srcNodeId;          
+			string srcNodeName;     
+			string toNodeId;        
+			string toNodeName;     
+			string topicName;   
+			long cycle;         
+			long long  updateTime;   
+			long  nCount;          
+			long  nSize;           
+			short srcType;
+			string appName;
+		};
+	  };
+  };
+};

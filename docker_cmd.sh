@@ -1,0 +1,9 @@
+podman run -d  --privileged --restart=always --net=host --pid=host --userns=host  --cgroupns=host -v /home/root1/databus2/apps:/root/databus2/apps -v /home/root1/databus2/config:/root/databus2/config -v /home/root1/databus2/s3watch:/root/databus2/s3watch -v /home/root1/databus2/logs:/root/databus2/logs -v /home/root1/databus2/images:/root/databus2/images -v /run/systemd/journal/socket:/run/systemd/journal/socket -v /sys/fs/cgroup:/sys/fs/cgroup:ro \
+  --cap-add SYS_ADMIN \
+  --security-opt seccomp=unconfined \
+  harbor.bigdata.seisys.cn:8443/v2x/databus2_x64:v0.10.10
+  
+  
+podman run -d  --privileged --restart=always --net=host --pid=host --userns=host  --cgroupns=host -v /home/tao/databus2/apps:/root/databus2/apps -v /home/tao/databus2/config:/root/databus2/config -v /home/tao/databus2/s3watch:/root/databus2/s3watch -v /home/tao/databus2/logs:/root/databus2/logs -v /home/tao/databus2/images:/root/databus2/images -v /run/systemd/journal/socket:/run/systemd/journal/socket -v /sys/fs/cgroup:/sys/fs/cgroup -v /run/systemd/system:/run/systemd/system  -v /run/dbus/system_bus_socket:/run/dbus/system_bus_socket -v /proc:/proc harbor.bigdata.seisys.cn:8443/v2x/databus2_x64:v1.0.0 
+
+podman run -d  --privileged --restart=always --net=host --pid=host --userns=host  --cgroupns=host --gpus ALL -v /home/tao/databus2/apps:/root/databus2/apps -v /home/tao/databus2/config:/root/databus2/config -v /home/tao/databus2/s3watch:/root/databus2/s3watch -v /home/tao/databus2/logs:/root/databus2/logs -v /home/tao/databus2/images:/root/databus2/images -v /run/systemd/journal/socket:/run/systemd/journal/socket -v /sys/fs/cgroup:/sys/fs/cgroup -v /run/systemd/system:/run/systemd/system  -v /run/dbus/system_bus_socket:/run/dbus/system_bus_socket -v /proc:/proc harbor.bigdata.seisys.cn:8443/v2x/databus2_humble_cuda_x64:v1.1.3
