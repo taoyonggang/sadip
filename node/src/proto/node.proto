@@ -1,0 +1,304 @@
+syntax = "proto3";
+
+package cn.seisys.dds;
+
+// 枚举定义
+enum ArchType {
+    ARCHTYPE_UNKNOWN = 0;
+    AMD64 = 1;
+    X86 = 2;
+    ARM64V8 = 3;
+}
+
+enum OSType {
+    OSTYPE_NOWN = 0;
+    WINDOWA = 1;
+    LINUX = 2;
+}
+
+enum CmdType {
+    CMDTYPE_UNKNOWN = 0;
+    REBOOT = 1;
+    RESTART = 2;
+    LS = 3;
+    MKDIR = 4;
+    DEL = 5;
+    DELDIR = 6;
+    SENDFILE = 7;
+    ADDAPP = 8;
+    REMOVEAPP = 9;
+    STARTAPP = 10;
+    STOPAPP = 11;
+    RESTARTAPP = 12;
+    LSAPP = 13;
+    ADDPLUGIN = 14;
+    REMOVEPLUGIN = 15;
+    STARTPLUGIN = 16;
+    STOPPLUGIN = 17;
+    RESTARTPLUGIN = 18;
+    LSPLUGIN = 19;
+    GETS3FILE = 20;
+    PUTS3FILE = 21;
+    LSS3DIR = 22;
+    LSS3BUCKETS = 23;
+    COPYS3FILE = 24;
+    DELS3FILE = 25;
+    ZIP = 26;
+    DZIP = 27;
+    ADDS3WATCH = 28;
+    RMS3WATCH = 29;
+    LSS3WATCH = 30;
+    STARTTRACELOG = 31;
+    STOPTRACELOG = 32;
+    LSTRACELOG = 33;
+    STARTEXEC = 34;
+    STOPEXEC = 35;
+    LSEXEC = 36;
+    RMEXEC = 37;
+    GETEXECRESULT = 38;
+    MKFILE = 39;
+    CPFILE = 40;
+    PODMANCMD = 41;
+}
+
+enum NodeState {
+    NODE_STATE_UNKNOWN = 0;
+    ONLINE = 1;
+    OFFLINE = 2;
+    OVERLOAD = 3;
+}
+
+enum PodmanCmd {
+    LIST_CONTAINERS = 0;
+    CREATE_CONTAINER = 1;
+    START_CONTAINER = 2;
+    STOP_CONTAINER = 3;
+    REMOVE_CONTAINER = 4;
+    INSPECT_CONTAINER = 5;
+    RESTART_CONTAINER = 6;
+    PAUSE_CONTAINER = 7;
+    UNPAUSE_CONTAINER = 8;
+    EXEC_IN_CONTAINER = 9;
+    LIST_IMAGES = 10;
+    PULL_IMAGE = 11;
+    REMOVE_IMAGE = 12;
+    INSPECT_IMAGE = 13;
+    TAG_IMAGE = 14;
+    LIST_NETWORKS = 15;
+    CREATE_NETWORK = 16;
+    REMOVE_NETWORK = 17;
+    INSPECT_NETWORK = 18;
+    LIST_VOLUMES = 19;
+    CREATE_VOLUME = 20;
+    REMOVE_VOLUME = 21;
+    INSPECT_VOLUME = 22;
+    LIST_STACKS = 23;
+    DEPLOY_STACK = 24;
+    REMOVE_STACK = 25;
+    INSPECT_STACK = 26;
+    UPDATE_STACK = 27;
+    START_STACK = 28;
+    STOP_STACK = 29;
+    RESTART_STACK = 30;
+    PAUSE_STACK = 31;
+    UNPAUSE_STACK = 32;
+    SCALE_STACK = 33;
+    GET_STACK_LOGS = 34;
+    LIST_REGISTRIES = 35;
+    ADD_REGISTRY = 36;
+    REMOVE_REGISTRY = 37;
+    LOGIN_REGISTRY = 38;
+}
+
+enum CommStatus {
+    STATUS_UNKNOWN = 0;
+    DOING = 1;
+    SUCCESS = 2;
+    INVALID = 3;
+    OTHER = 4;
+}
+
+// 消息定义
+message File {
+    bytes file_path_name = 1;
+    bool is_dir = 2;
+    int64 file_size = 3;
+    int64 timestamp = 4;
+}
+
+// 定义包含File序列的消息
+message FileInfos {
+    repeated File files = 1;  // 相当于DDS中的sequence
+}
+
+message Ping {
+    string to_node_id = 1;
+    string src_node_id = 2;
+    string node_app_ver = 3;
+    string node_cfg_ver = 4;
+    NodeState state = 5;
+    int64 created_at = 6;
+    string desc = 7;
+}
+
+message Cpu {
+    string vendor = 1;
+    string model = 2;
+    int32 physical_cores = 3;
+    int32 logical_cores = 4;
+    int64 max_frequency = 5;
+    int64 regular_frequency = 6;
+    int64 min_frequency = 7;
+    repeated int64 current_frequency = 8;
+    int64 cache_size = 9;
+    double cpu_usage = 10;
+}
+
+message Gpu {
+    string vendor = 1;
+    string model = 2;
+    string driver_version = 3;
+    double memory = 4;
+    int64 frequency = 5;
+}
+
+message Ram {
+    string vendor = 1;
+    string model = 2;
+    bytes name = 3;
+    string serial_number = 4;
+    int64 size = 5;
+    int64 free = 6;
+    int64 available = 7;
+}
+
+message Disk {
+    bytes vendor = 1;
+    string model = 2;
+    string serial_number = 3;
+    int64 size = 4;
+}
+
+message MainBoard {
+    string vendor = 1;
+    bytes name = 2;
+    string version = 3;
+    string serial_number = 4;
+}
+
+message ProcessTime {
+    float user_time = 1;
+    float kernel_time = 2;
+    float children_usertime = 3;
+    float children_kernel_time = 4;
+}
+
+message Process {
+    bytes name = 1;
+    string work_path = 2;
+    int32 pid = 3;
+    string args = 4;
+    double cpu_usage = 5;
+    double mem_usage = 6;
+    int64 start_time = 7;
+    int64 stop_time = 8;
+    int32 reboot_count = 9;
+    int32 priority = 10;
+    map<string, string> env = 11;
+}
+
+message Network {
+    bytes name = 1;
+    string ipv4s = 2;
+    string ipv6s = 3;
+    int64 broadband = 4;
+    int64 broadband_using = 5;
+}
+
+message OSInfo {
+    bytes operating_system = 1;
+    bytes short_name = 2;
+    string version = 3;
+    string kernel = 4;
+    string architecture = 5;
+    string endianess = 6;
+}
+
+message MachineState {
+    string to_node_id = 1;
+    string src_node_id = 2;
+    repeated Cpu cpus = 3;
+    repeated Gpu gpus = 4;
+    Ram rams = 5;
+    repeated Disk disks = 6;
+    repeated Network networks = 7;
+    MainBoard main_board_infos = 8;
+    OSInfo os_infos = 9;
+    repeated Process processes = 10;
+}
+
+message Node {
+    string uuid = 1;
+    string to_node_id = 2;
+    bytes to_node_name = 3;
+    string src_node_id = 4;
+    string to_group = 5;
+    ArchType arch = 6;
+    OSType os = 7;
+    string uri = 8;
+    string to_config_path = 9;
+    string src_config_path = 10;
+    uint32 domain = 11;
+    bytes config = 12;
+    string config_hash = 13;
+    uint32 config_size = 14;
+    CommStatus state = 15;
+    int64 created_at = 16;
+    int64 updated_at = 17;
+}
+
+message NodeReply {
+    string uuid = 1;
+    string to_node_id = 2;
+    bytes to_node_name = 3;
+    string src_node_id = 4;
+    string to_group = 5;
+    string reply_uuid = 6;
+    CommStatus status = 7;
+    bytes desc = 8;
+    bytes desc_str = 9;
+    int64 created_at = 10;
+    int64 updated_at = 11;
+}
+
+message NodeCmd {
+    string uuid = 1;
+    string src_node_id = 2;
+    bytes src_node_name = 3;
+    string to_node_id = 4;
+    string to_group = 5;
+    CmdType cmd_type = 6;
+    PodmanCmd podman_cmd = 7;
+    string cmd = 8;
+    string paras = 9;
+    string paras_1 = 10;
+    string paras_2 = 11;
+    int64 created_at = 12;
+    int64 updated_at = 13;
+}
+
+message NodeCmdReply {
+    string uuid = 1;
+    string src_node_id = 2;
+    bytes src_node_name = 3;
+    string to_node_id = 4;
+    bytes to_node_name = 5;
+    string cmd_reply_uuid = 6;
+    CmdType cmd_type = 7;
+    CommStatus status = 8;
+    bytes desc = 9;
+    bytes desc_str = 10;
+    repeated File result = 11;
+    int64 created_at = 12;
+    int64 updated_at = 13;
+}

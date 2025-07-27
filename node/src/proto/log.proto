@@ -1,0 +1,12 @@
+// log.proto
+syntax = "proto3";
+
+package cn.seisys.dds;
+
+message LogData {
+    string uuid = 1;
+    string src_node_id = 2;    // 对应原 srcNodeId
+    string to_node_id = 3;     // 对应原 toNodeId
+    string file_name = 4;      // 对应原 fileName
+    string new_logs = 5;       // 对应原 newLogs
+}

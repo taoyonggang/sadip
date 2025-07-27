@@ -1,0 +1,38 @@
+﻿syntax = "proto3";
+
+package cn.seisys.dds;
+
+// FileData message
+message FileData {
+    string uuid = 1;
+    string src_node_id = 2;
+    string to_node_id = 3;
+    bytes file_name = 4;
+    bytes save_file_name = 5;
+    bytes sub_dir = 6;
+    bool is_end = 7;
+    uint64 file_total_size = 8;
+    int64 f_modify_time = 9;
+    uint64 block_seq = 10;
+    uint64 total_block_num = 11;
+    bytes block_content = 12;
+    uint64 block_content_len = 13;
+    string transfer_id = 14;
+    string md5 = 15;
+}
+
+// FileDataReply message
+message FileDataReply {
+    string uuid = 1;
+    string src_node_id = 2;
+    string to_node_id = 3;
+    bytes file_name = 4;
+    string reply_uuid = 5;
+    bytes sub_dir = 6;
+    bool is_end = 7;
+    uint64 block_seq = 8;
+    uint64 total_block_num = 9;
+    uint64 file_total_size = 10;
+    repeated uint64 block_losts = 11;
+    int64 state = 12;
+}
